@@ -33,7 +33,13 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Top Section: Profile Link & Quick Actions */}
+        {/* Welcome */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">안녕하세요, 김크리에이터님! 👋</h1>
+          <p className="text-gray-600">오늘도 좋은 하루 되세요</p>
+        </div>
+
+        {/* Top Section: Profile Link & Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* Your Link */}
           <div className="md:col-span-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
@@ -79,136 +85,99 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Link href="/shop" className="bg-white rounded-xl p-4 border-2 border-dashed border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 transition text-left">
-            <div className="text-2xl mb-2">🛍️</div>
-            <div className="font-semibold text-gray-900">쇼핑몰 관리</div>
-            <div className="text-sm text-gray-600">상품 & 서비스</div>
-          </Link>
-          <Link href="/community" className="bg-white rounded-xl p-4 border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition text-left">
-            <div className="text-2xl mb-2">💬</div>
-            <div className="font-semibold text-gray-900">커뮤니티</div>
-            <div className="text-sm text-gray-600">팬들과 소통하기</div>
-          </Link>
-          <Link href="/coupons" className="bg-white rounded-xl p-4 border-2 border-dashed border-gray-300 hover:border-yellow-500 hover:bg-yellow-50 transition text-left">
-            <div className="text-2xl mb-2">🎟️</div>
-            <div className="font-semibold text-gray-900">할인 쿠폰</div>
-            <div className="text-sm text-gray-600">프로모션 관리</div>
-          </Link>
-          <Link href="/email" className="bg-white rounded-xl p-4 border-2 border-dashed border-gray-300 hover:border-green-500 hover:bg-green-50 transition text-left">
-            <div className="text-2xl mb-2">📧</div>
-            <div className="font-semibold text-gray-900">이메일</div>
-            <div className="text-sm text-gray-600">마케팅 캠페인</div>
-          </Link>
+        {/* 상품 관리 */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">내 상품</h2>
+            <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+              + 새 상품 등록
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <div className="flex items-center gap-4">
+                <div className="text-2xl">📚</div>
+                <div>
+                  <div className="font-semibold text-gray-900">뷰티 루틴 완벽 가이드</div>
+                  <div className="text-sm text-gray-600">디지털 상품 • ₩29,000</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-emerald-600">234개 판매</div>
+                <div className="text-sm text-gray-500">₩6,786,000</div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <div className="flex items-center gap-4">
+                <div className="text-2xl">🗓️</div>
+                <div>
+                  <div className="font-semibold text-gray-900">1:1 뷰티 컨설팅</div>
+                  <div className="text-sm text-gray-600">예약 서비스 • ₩50,000</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-emerald-600">92개 예약</div>
+                <div className="text-sm text-gray-500">₩4,600,000</div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <div className="flex items-center gap-4">
+                <div className="text-2xl">🎨</div>
+                <div>
+                  <div className="font-semibold text-gray-900">포토샵 프리셋 팩</div>
+                  <div className="text-sm text-gray-600">디지털 상품 • ₩15,000</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-emerald-600">189개 판매</div>
+                <div className="text-sm text-gray-500">₩2,835,000</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Additional Features */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Link href="/membership" className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-4 border border-purple-200 hover:shadow-lg transition">
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">✨</div>
-              <div>
-                <div className="font-bold text-gray-900">멤버십</div>
-                <div className="text-sm text-gray-600">등급 관리 • 156명</div>
-              </div>
-            </div>
-          </Link>
-          <Link href="/booking" className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl p-4 border border-blue-200 hover:shadow-lg transition">
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">📅</div>
-              <div>
-                <div className="font-bold text-gray-900">예약 관리</div>
-                <div className="text-sm text-gray-600">서비스 스케줄</div>
-              </div>
-            </div>
-          </Link>
-          <Link href="/profile" className="bg-gradient-to-br from-yellow-100 to-orange-100 rounded-xl p-4 border border-yellow-200 hover:shadow-lg transition">
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">👤</div>
-              <div>
-                <div className="font-bold text-gray-900">내 프로필</div>
-                <div className="text-sm text-gray-600">레벨 & 뱃지</div>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Recent Activity */}
+        {/* 예약 일정 */}
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Links Performance */}
+          {/* 예약 일정 */}
           <div className="bg-white rounded-2xl border border-gray-200">
             <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-gray-900">링크 성과</h3>
-                <Link href="/dashboard/analytics" className="text-sm text-purple-600 hover:underline">
-                  전체보기
-                </Link>
-              </div>
+              <h3 className="font-bold text-gray-900">예약 일정</h3>
             </div>
             <div className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center text-lg">
-                    🎬
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">최신 유튜브 영상</div>
-                    <div className="text-sm text-gray-600">124 클릭</div>
-                  </div>
+              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-2xl">📅</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-900">10/6 (월) 14:00</div>
+                  <div className="text-sm text-gray-600">1:1 뷰티 컨설팅 • 김XX님</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">52%</div>
-                  <div className="text-xs text-gray-500">클릭률</div>
-                </div>
+                <div className="text-emerald-600 font-semibold">₩50,000</div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-lg">
-                    🛍️
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">스마트스토어</div>
-                    <div className="text-sm text-gray-600">86 클릭</div>
-                  </div>
+              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-2xl">📅</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-900">10/7 (화) 16:00</div>
+                  <div className="text-sm text-gray-600">1:1 뷰티 컨설팅 • 이XX님</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">36%</div>
-                  <div className="text-xs text-gray-500">클릭률</div>
-                </div>
+                <div className="text-emerald-600 font-semibold">₩50,000</div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-lg">
-                    📚
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">뷰티 루틴 가이드</div>
-                    <div className="text-sm text-gray-600">43 클릭</div>
-                  </div>
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="text-2xl">📅</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-900">10/9 (목) 10:00</div>
+                  <div className="text-sm text-gray-600">1:1 뷰티 컨설팅 • 박XX님</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">18%</div>
-                  <div className="text-xs text-gray-500">클릭률</div>
-                </div>
+                <div className="text-gray-600 font-semibold">₩50,000</div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center text-lg">
-                    ✍️
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">네이버 블로그</div>
-                    <div className="text-sm text-gray-600">32 클릭</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">13%</div>
-                  <div className="text-xs text-gray-500">클릭률</div>
-                </div>
+              <div className="text-center pt-4">
+                <Link href="/booking" className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold">
+                  전체 일정 보기 →
+                </Link>
               </div>
             </div>
           </div>
@@ -271,152 +240,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bottom Tips */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200">
-          <div className="flex items-start gap-4">
-            <div className="text-3xl">💡</div>
-            <div>
-              <h3 className="font-bold text-gray-900 mb-2">프로 팁: 클릭률을 높이는 방법</h3>
-              <p className="text-gray-700 mb-3">
-                링크 제목에 이모지를 추가하고, 명확한 행동 유도 문구를 사용하세요. 
-                데이터에 따르면 클릭률이 평균 40% 증가합니다!
-              </p>
-              <Link href="#" className="text-blue-600 hover:underline font-semibold text-sm">
-                더 알아보기 →
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Highlights */}
-        <div className="mt-8 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 border-2 border-emerald-200">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-200 rounded-full text-emerald-800 font-semibold text-xs mb-4">
-              ✨ 특별한 기능
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              크리에이터 링크만의 강력한 기능
-            </h3>
-            <p className="text-gray-600">수익화부터 팬덤 관리까지 한 곳에서</p>
-          </div>
-
-          {/* Main Features */}
-          <div className="grid md:grid-cols-3 gap-6 mb-6">
-            {/* 팬 커뮤니티 */}
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-xl">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
-                  💬
-                </div>
-                <div>
-                  <div className="font-bold text-lg">팬 커뮤니티</div>
-                  <div className="text-xs text-emerald-100">독점 기능</div>
-                </div>
-              </div>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2">
-                  <span className="text-yellow-300">✨</span> VIP/프리미엄 전용 피드
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-yellow-300">✨</span> 실시간 댓글 & 좋아요
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-yellow-300">✨</span> 투표 & 설문조사
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-yellow-300">✨</span> 레벨 & 뱃지 시스템
-                </li>
-              </ul>
-            </div>
-
-            {/* 수익화 도구 */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-2xl">
-                  💰
-                </div>
-                <div>
-                  <div className="font-bold text-lg text-gray-900">수익화 도구</div>
-                  <div className="text-xs text-gray-500">완벽한 세트</div>
-                </div>
-              </div>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 디지털 상품 판매
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 1:1 서비스 예약
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 2단계 멤버십
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 영상 콘텐츠 판매
-                </li>
-              </ul>
-            </div>
-
-            {/* 한국 특화 */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center text-2xl">
-                  🇰🇷
-                </div>
-                <div>
-                  <div className="font-bold text-lg text-gray-900">한국 특화</div>
-                  <div className="text-xs text-gray-500">완벽 최적화</div>
-                </div>
-              </div>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 토스/카카오페이
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 카카오톡 알림
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 네이버 연동
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-emerald-600">✓</span> 한국어 지원
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Additional Features */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">🎟️</div>
-              <div className="font-semibold text-gray-900 text-sm mb-1">할인 쿠폰</div>
-              <div className="text-xs text-gray-600">무제한 발행</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">📧</div>
-              <div className="font-semibold text-gray-900 text-sm mb-1">이메일</div>
-              <div className="text-xs text-gray-600">마케팅 자동화</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">📊</div>
-              <div className="font-semibold text-gray-900 text-sm mb-1">분석</div>
-              <div className="text-xs text-gray-600">실시간 대시보드</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">🎨</div>
-              <div className="font-semibold text-gray-900 text-sm mb-1">커스텀</div>
-              <div className="text-xs text-gray-600">자유로운 디자인</div>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="mt-8 text-center bg-white rounded-2xl p-6">
-            <div className="text-2xl font-bold text-gray-900 mb-2">₩19,900 / 월</div>
-            <p className="text-sm text-gray-600 mb-4">모든 기능 무제한 사용</p>
-            <Link href="/demo" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full font-semibold hover:shadow-lg transition">
-              내 페이지 미리보기 →
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );

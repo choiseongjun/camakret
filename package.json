@@ -1,6 +1,7 @@
 {
-  "name": "createstore",
-  "version": "0.1.0",
+  "name": "foodtube-review",
+  "version": "1.0.0",
+  "description": "한국 먹방 유튜버 리뷰 플랫폼 - 커뮤니티 기반 큐레이션 & 개인 취향 맞춤 추천",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -8,16 +9,20 @@
     "start": "next start"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "axios": "^1.6.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.263.1",
+    "next": "15.5.4",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.4"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

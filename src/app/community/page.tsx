@@ -1,98 +1,193 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-type PostType = "all" | "premium" | "vip" | "public";
+type PostType = "all" | "discussion" | "recommendation" | "review" | "poll" | "suggestion";
+
+interface Post {
+  id: string;
+  type: string;
+  title?: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  authorBadge?: string | null;
+  creatorId?: string | null;
+  tags: string[];
+  images: string[];
+  createdAt: string;
+  likes: number;
+  likedBy: string[];
+  comments: any[];
+  isPinned: boolean;
+}
 
 export default function Community() {
   const [activeFilter, setActiveFilter] = useState<PostType>("all");
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [newPost, setNewPost] = useState({
+    type: 'discussion' as PostType,
+    title: '',
+    content: '',
+    tags: [] as string[],
+  });
+  const [currentUserId] = useState('user-' + Date.now());
 
-  const posts = [
+  useEffect(() => {
+    fetchPosts();
+  }, [activeFilter]);
+
+  const fetchPosts = async () => {
+    try {
+      const url = activeFilter === 'all'
+        ? '/api/community'
+        : `/api/community?type=${activeFilter}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.success) {
+        setPosts(data.data);
+      }
+    } catch (error) {
+      console.error('게시글 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitPost = async () => {
+    if (!newPost.content.trim()) return;
+
+    try {
+      const response = await fetch('/api/community', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newPost,
+          authorId: currentUserId,
+          authorName: '익명 사용자',
+        }),
+      });
+
+      if (response.ok) {
+        setShowPostForm(false);
+        setNewPost({ type: 'discussion', title: '', content: '', tags: [] });
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error('게시글 작성 실패:', error);
+    }
+  };
+
+  const handleLike = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/community/${postId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'like',
+          userId: currentUserId,
+        }),
+      });
+
+      if (response.ok) {
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error('좋아요 실패:', error);
+    }
+  };
+
+  const samplePosts = [
     {
       id: 1,
-      author: "김크리에이터",
-      authorBadge: "💎 VIP",
-      tier: "vip",
-      timestamp: "5분 전",
-      content: "VIP 멤버님들만을 위한 특별 공지! 🎉\n\n다음 주 신상품 론칭 전에 VIP 회원님들께 먼저 공개합니다. 50% 얼리버드 할인 + 한정 굿즈 증정 예정이에요!\n\n어떤 상품일지 힌트: 💄✨",
+      author: "먹방러버",
+      authorBadge: "🔥 인기 멤버",
+      tier: "discussion",
+      timestamp: "10분 전",
+      content: "요즘 핫한 먹방 크리에이터 추천해주세요! 🍜\n\nASMR 스타일 좋아하는데 새로운 채널 발견하고 싶어요. 여러분이 요즘 보고 있는 크리에이터는 누구인가요?\n\n특히 중식이나 한식 전문 채널이면 더 좋을 것 같아요!",
       image: null,
-      likes: 234,
-      comments: 45,
+      likes: 45,
+      comments: 23,
       isPinned: true
     },
     {
       id: 2,
-      author: "김크리에이터",
-      authorBadge: "💜 프리미엄",
-      tier: "premium",
+      author: "푸드헌터",
+      authorBadge: "⭐ 리뷰왕",
+      tier: "recommendation",
       timestamp: "1시간 전",
-      content: "프리미엄 회원님들께 질문드립니다! 📊\n\n다음 영상 주제로 뭘 원하시나요?\n1️⃣ 고급 메이크업 테크닉\n2️⃣ 스킨케어 루틴 완벽 가이드\n3️⃣ 뷰티 브이로그 촬영 노하우\n\n댓글로 투표해주세요!",
+      content: "Jane ASMR 제인님 완전 강추합니다! ✨\n\n구독자 1800만 명이 괜히 있는 게 아니에요. ASMR 사운드 퀄리티가 정말 좋고, 음식 선택도 다양해서 질리지 않아요.\n\n입문자분들에게도 추천드립니다!",
       image: null,
-      likes: 156,
-      comments: 89,
-      isPinned: false,
-      poll: {
-        options: [
-          { text: "고급 메이크업 테크닉", votes: 45, percentage: 51 },
-          { text: "스킨케어 루틴 완벽 가이드", votes: 32, percentage: 36 },
-          { text: "뷰티 브이로그 촬영 노하우", votes: 12, percentage: 13 }
-        ],
-        totalVotes: 89,
-        endsIn: "2일 남음"
-      }
+      likes: 89,
+      comments: 34,
+      isPinned: false
     },
     {
       id: 3,
-      author: "민지",
-      authorBadge: "⭐ 슈퍼팬 Lv.5",
-      tier: "public",
-      timestamp: "3시간 전",
-      content: "어제 구매한 '뷰티 루틴 가이드' 진짜 대박이에요! 😍\n\n120페이지인데 3시간 만에 다 읽었어요. 특히 피부 타입별 관리법이 너무 유용했습니다. 이미 실천 중이고 효과 보고 있어요!\n\n#구매인증 #강추",
+      author: "먹스타그램",
+      authorBadge: "🍕 음식 탐험가",
+      tier: "review",
+      timestamp: "2시간 전",
+      content: "Hongyu ASMR 홍유님 리뷰 남겨요! ⭐⭐⭐⭐⭐\n\nASMR 퀄리티가 정말 좋아요. 특히 치킨 먹방이 레전드입니다. 바삭한 소리 듣고 있으면 힐링되는 느낌?\n\n구독자 1600만 명의 위엄을 느낄 수 있어요 👍",
       image: "https://via.placeholder.com/400x300",
-      likes: 89,
-      comments: 23,
+      likes: 124,
+      comments: 45,
       isPinned: false,
       verified: true
     },
     {
       id: 4,
-      author: "김크리에이터",
-      authorBadge: null,
-      tier: "public",
-      timestamp: "어제",
-      content: "안녕하세요 여러분! 👋\n\n오늘 새로운 유튜브 영상 올라왔어요. 이번엔 가을 메이크업 룩 3가지를 준비했습니다.\n\n멤버십 회원분들은 확장판(+30분)을 커뮤니티에서 먼저 보실 수 있어요!",
+      author: "야식러",
+      authorBadge: "🌙 심야 먹방러",
+      tier: "discussion",
+      timestamp: "5시간 전",
+      content: "밤에 보기 좋은 먹방 추천해주세요! 🌃\n\n야식 땡길 때 보면 좋은 채널 있나요? 소리가 좋고 분위기 있는 채널 선호합니다.\n\nASMR이면 더 좋구요!",
       image: null,
-      likes: 456,
+      likes: 67,
+      comments: 56,
+      isPinned: false
+    },
+    {
+      id: 5,
+      author: "맛집탐방",
+      authorBadge: null,
+      tier: "recommendation",
+      timestamp: "어제",
+      content: "요리 배우고 싶으면 이 채널들 보세요! 👨‍🍳\n\n먹방만 보다가 요리도 배우고 싶어서 찾아봤는데, 요리 과정 보여주는 크리에이터들도 많더라구요.\n\n따라하기 쉽고 설명도 친절해서 초보자에게 딱이에요!",
+      image: null,
+      likes: 156,
       comments: 78,
       isPinned: false
     }
   ];
 
-  const filteredPosts = posts.filter(post => 
-    activeFilter === "all" || post.tier === activeFilter
+  const displayPosts = posts.length > 0 ? posts : samplePosts;
+  const filteredPosts = displayPosts.filter((post: any) =>
+    activeFilter === "all" || post.type === activeFilter || post.tier === activeFilter
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/demo" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-lg">
-                👩‍🎨
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">🎬</span>
               </div>
               <div>
-                <div className="font-bold text-gray-900">크리에이터 커뮤니티</div>
-                <div className="text-xs text-gray-600">팬들과 함께하는 공간</div>
+                <div className="font-bold text-gray-900">CreatorHub 커뮤니티</div>
+                <div className="text-xs text-gray-600">크리에이터와 팬이 함께하는 공간</div>
               </div>
             </Link>
-            <Link href="/profile" className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full hover:bg-emerald-100 transition">
-              <span className="text-sm font-semibold text-emerald-600">내 프로필</span>
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                M
-              </div>
+            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+              ← 홈으로
             </Link>
           </div>
         </div>
@@ -100,23 +195,23 @@ export default function Community() {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Stats Banner */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white mb-6">
+        <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-6 text-white mb-6">
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold">1,234</div>
-              <div className="text-sm text-purple-100">전체 멤버</div>
+              <div className="text-2xl font-bold">5,234</div>
+              <div className="text-sm text-orange-100">전체 멤버</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">156</div>
-              <div className="text-sm text-purple-100">💎 VIP</div>
+              <div className="text-2xl font-bold">377+</div>
+              <div className="text-sm text-orange-100">크리에이터</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">423</div>
-              <div className="text-sm text-purple-100">💜 프리미엄</div>
+              <div className="text-2xl font-bold">1,423</div>
+              <div className="text-sm text-orange-100">리뷰</div>
             </div>
             <div>
               <div className="text-2xl font-bold">89</div>
-              <div className="text-sm text-purple-100">새 게시물</div>
+              <div className="text-sm text-orange-100">새 게시물</div>
             </div>
           </div>
         </div>
@@ -128,41 +223,61 @@ export default function Community() {
               onClick={() => setActiveFilter("all")}
               className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition ${
                 activeFilter === "all"
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               전체 피드
             </button>
             <button
-              onClick={() => setActiveFilter("vip")}
+              onClick={() => setActiveFilter("discussion")}
               className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition ${
-                activeFilter === "vip"
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                activeFilter === "discussion"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              💎 VIP 전용
+              💬 토론
             </button>
             <button
-              onClick={() => setActiveFilter("premium")}
+              onClick={() => setActiveFilter("recommendation")}
               className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition ${
-                activeFilter === "premium"
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                activeFilter === "recommendation"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              💜 프리미엄
+              ⭐ 추천
             </button>
             <button
-              onClick={() => setActiveFilter("public")}
+              onClick={() => setActiveFilter("review")}
               className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition ${
-                activeFilter === "public"
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                activeFilter === "review"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              🌐 공개
+              📝 리뷰
+            </button>
+            <button
+              onClick={() => setActiveFilter("poll")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition ${
+                activeFilter === "poll"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              📊 투표
+            </button>
+            <button
+              onClick={() => setActiveFilter("suggestion")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition ${
+                activeFilter === "suggestion"
+                  ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              💡 제안
             </button>
           </div>
         </div>
@@ -171,38 +286,27 @@ export default function Community() {
         <div className="space-y-4">
           {filteredPosts.map((post) => (
             <div key={post.id} className={`bg-white rounded-2xl border-2 ${
-              post.tier === "vip" ? "border-yellow-400" :
-              post.tier === "premium" ? "border-purple-400" :
-              "border-gray-200"
+              post.isPinned ? "border-orange-400" : "border-gray-200"
             } overflow-hidden hover:shadow-lg transition`}>
-              {/* Tier Badge */}
-              {post.tier !== "public" && (
-                <div className={`px-4 py-2 text-sm font-semibold ${
-                  post.tier === "vip" ? "bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900" :
-                  "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                }`}>
-                  {post.tier === "vip" ? "💎 VIP 회원 전용" : "💜 프리미엄 회원 전용"}
-                </div>
-              )}
 
               <div className="p-6">
                 {/* Author Info */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold">
-                      {post.author[0]}
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      {(post.authorName || post.author || '익명')[0]}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900">{post.author}</span>
+                        <span className="font-bold text-gray-900">{post.authorName || post.author || '익명'}</span>
                         {post.authorBadge && (
-                          <span className="text-xs px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full font-semibold">
+                          <span className="text-xs px-2 py-1 bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 rounded-full font-semibold">
                             {post.authorBadge}
                           </span>
                         )}
                         {post.verified && (
                           <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-                            ✓ 구매인증
+                            ✓ 인증
                           </span>
                         )}
                       </div>
@@ -210,8 +314,8 @@ export default function Community() {
                     </div>
                   </div>
                   {post.isPinned && (
-                    <span className="px-3 py-1 bg-red-100 text-red-600 text-xs rounded-full font-semibold">
-                      📌 공지
+                    <span className="px-3 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-semibold">
+                      📌 인기
                     </span>
                   )}
                 </div>
@@ -220,32 +324,6 @@ export default function Community() {
                 <p className="text-gray-900 whitespace-pre-line mb-4 leading-relaxed">
                   {post.content}
                 </p>
-
-                {/* Poll */}
-                {post.poll && (
-                  <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                    <div className="space-y-3">
-                      {post.poll.options.map((option, idx) => (
-                        <div key={idx}>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-semibold text-gray-900">{option.text}</span>
-                            <span className="text-sm text-gray-600">{option.votes}표 ({option.percentage}%)</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all"
-                              style={{ width: `${option.percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-3 flex items-center justify-between">
-                      <span>총 {post.poll.totalVotes}명 참여</span>
-                      <span>{post.poll.endsIn}</span>
-                    </div>
-                  </div>
-                )}
 
                 {/* Image */}
                 {post.image && (
@@ -256,15 +334,22 @@ export default function Community() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-6 pt-4 border-t border-gray-200">
-                  <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition">
+                  <button
+                    onClick={() => handleLike(post.id)}
+                    className={`flex items-center gap-2 transition ${
+                      post.likedBy?.includes(currentUserId)
+                        ? 'text-red-500'
+                        : 'text-gray-600 hover:text-orange-600'
+                    }`}
+                  >
                     <span className="text-xl">❤️</span>
-                    <span className="font-semibold">{post.likes}</span>
+                    <span className="font-semibold">{post.likes || 0}</span>
                   </button>
-                  <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition">
+                  <button className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition">
                     <span className="text-xl">💬</span>
-                    <span className="font-semibold">{post.comments}</span>
+                    <span className="font-semibold">{post.comments?.length || post.comments || 0}</span>
                   </button>
-                  <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition">
+                  <button className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition">
                     <span className="text-xl">🔗</span>
                     <span className="font-semibold">공유</span>
                   </button>
@@ -274,27 +359,116 @@ export default function Community() {
           ))}
         </div>
 
-        {/* Upgrade CTA */}
-        {activeFilter !== "all" && filteredPosts.length === 0 && (
+        {/* Empty State */}
+        {filteredPosts.length === 0 && (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
-            <div className="text-6xl mb-4">🔒</div>
+            <div className="text-6xl mb-4">🍜</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              {activeFilter === "vip" ? "VIP 멤버십" : "프리미엄 멤버십"} 전용 콘텐츠
+              아직 게시물이 없습니다
             </h3>
             <p className="text-gray-600 mb-6">
-              이 섹션의 게시물을 보려면 멤버십 업그레이드가 필요합니다
+              첫 번째 게시물을 작성해보세요!
             </p>
-            <Link href="/membership" className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold hover:shadow-xl transition">
-              멤버십 업그레이드
-            </Link>
           </div>
         )}
       </div>
 
       {/* Floating Write Button */}
-      <button className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-2xl hover:shadow-3xl transition flex items-center justify-center text-2xl">
+      <button
+        onClick={() => setShowPostForm(true)}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full shadow-2xl hover:shadow-3xl transition flex items-center justify-center text-2xl"
+      >
         ✏️
       </button>
+
+      {/* Post Form Modal */}
+      {showPostForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">게시글 작성</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setNewPost({ ...newPost, type: 'discussion' })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      newPost.type === 'discussion'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    💬 토론
+                  </button>
+                  <button
+                    onClick={() => setNewPost({ ...newPost, type: 'recommendation' })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      newPost.type === 'recommendation'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    ⭐ 추천
+                  </button>
+                  <button
+                    onClick={() => setNewPost({ ...newPost, type: 'review' })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      newPost.type === 'review'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    📝 리뷰
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">제목 (선택)</label>
+                <input
+                  type="text"
+                  value={newPost.title}
+                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="제목을 입력하세요"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">내용</label>
+                <textarea
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  rows={8}
+                  placeholder="내용을 입력하세요"
+                  maxLength={1000}
+                />
+                <div className="text-right text-sm text-gray-500 mt-1">
+                  {newPost.content.length}/1000
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleSubmitPost}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg font-medium hover:shadow-lg transition"
+                disabled={!newPost.content.trim()}
+              >
+                게시글 작성
+              </button>
+              <button
+                onClick={() => setShowPostForm(false)}
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
