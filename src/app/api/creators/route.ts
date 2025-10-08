@@ -1,102 +1,88 @@
-import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { Pool } from 'pg';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+// 데이터베이스 연결 풀 생성 (환경 변수 사용)
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+});
+
+// DB 컬럼 이름을 프론트엔드에서 사용하는 JSON 객체 구조로 변환하는 함수
+const mapToCreatorObject = (row: any) => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  thumbnail: row.thumbnail_url,
+  statistics: {
+    subscribers: parseInt(row.subscribers, 10) || 0,
+    totalViews: parseInt(row.total_views, 10) || 0,
+    videoCount: parseInt(row.video_count, 10) || 0,
+  },
+  foodCategories: {
+    style: row.category ? [row.category] : [], // DB에 따라 조정 필요
+    foodType: [], // DB에 따라 조정 필요
+    channelSize: getChannelSize(parseInt(row.subscribers, 10) || 0),
+  },
+  reviewStats: {
+    averageRating: 0, // DB에 리뷰 테이블이 없으므로 임시값
+    totalReviews: 0, // DB에 리뷰 테이블이 없으므로 임시값
+  },
+  links: {
+    channel: row.channel_url,
+  },
+});
+
+const getChannelSize = (subscribers: number) => {
+  if (subscribers >= 1000000) return '대형';
+  if (subscribers >= 100000) return '중형';
+  return '소형';
+};
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '12', 10);
+  const search = searchParams.get('search') || '';
+  const offset = (page - 1) * limit;
+
+  let client;
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const limit = parseInt(searchParams.get('limit') || '12');
-    const offset = parseInt(searchParams.get('offset') || '0');
-    const style = searchParams.get('style');
-    const size = searchParams.get('size');
-
-    // JSON 파일 읽기
-    const filePath = path.join(process.cwd(), '..', 'dataapi', 'data', 'korean-food-creators.json');
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const allCreators = JSON.parse(fileContent);
-
-    // 크리에이터 데이터 변환
-    let creators = allCreators.map((creator: any, index: number) => {
-      // 구독자 수로 채널 크기 결정
-      const subscribers = creator.statistics.subscribers;
-      let channelSize = '소형';
-      if (subscribers >= 1000000) channelSize = '대형';
-      else if (subscribers >= 100000) channelSize = '중형';
-
-      // 스타일 분류 (키워드 기반)
-      const keywords = creator.keywords || [];
-      const styles = [];
-      if (keywords.some((k: string) => k.toLowerCase().includes('asmr'))) styles.push('ASMR');
-      if (keywords.some((k: string) => k.includes('토크') || k.includes('talk'))) styles.push('토크');
-      if (keywords.some((k: string) => k.includes('먹방') || k.includes('mukbang'))) styles.push('먹방');
-      if (keywords.some((k: string) => k.includes('요리') || k.includes('cooking') || k.includes('recipe'))) styles.push('요리');
-      if (keywords.some((k: string) => k.includes('대식') || k.includes('big eater'))) styles.push('대식가');
-      if (keywords.some((k: string) => k.includes('리뷰') || k.includes('review'))) styles.push('리뷰');
-      if (styles.length === 0) styles.push('먹방');
-
-      // 음식 종류 분류
-      const foodTypes = [];
-      const desc = creator.description?.toLowerCase() || '';
-      if (desc.includes('한식') || desc.includes('korean')) foodTypes.push('한식');
-      if (desc.includes('중식') || desc.includes('chinese')) foodTypes.push('중식');
-      if (desc.includes('일식') || desc.includes('japanese')) foodTypes.push('일식');
-      if (desc.includes('양식') || desc.includes('western')) foodTypes.push('양식');
-      if (desc.includes('디저트') || desc.includes('dessert')) foodTypes.push('디저트');
-      if (foodTypes.length === 0) foodTypes.push('다양한 음식');
-
-      // 가짜 리뷰 통계 생성
-      const avgRating = 3.5 + Math.random() * 1.5; // 3.5-5.0
-      const totalReviews = Math.floor(Math.random() * 100) + 10;
-
-      return {
-        id: creator.channelId,
-        name: creator.name,
-        description: creator.description || `${creator.name}의 먹방 채널`,
-        thumbnail: creator.thumbnail,
-        statistics: creator.statistics,
-        foodCategories: {
-          style: styles,
-          foodType: foodTypes,
-          channelSize: channelSize
-        },
-        reviewStats: {
-          averageRating: parseFloat(avgRating.toFixed(1)),
-          totalReviews: totalReviews,
-          ratingDistribution: {
-            5: Math.floor(totalReviews * 0.5),
-            4: Math.floor(totalReviews * 0.3),
-            3: Math.floor(totalReviews * 0.15),
-            2: Math.floor(totalReviews * 0.04),
-            1: Math.floor(totalReviews * 0.01)
-          }
-        },
-        links: creator.links
-      };
-    });
-
-    // 필터링
-    if (style) {
-      creators = creators.filter((c: any) => c.foodCategories.style.includes(style));
-    }
-    if (size) {
-      creators = creators.filter((c: any) => c.foodCategories.channelSize === size);
+    client = await pool.connect();
+    
+    const searchParamsList: any[] = [];
+    let whereClause = '';
+    if (search) {
+      searchParamsList.push(`%${search}%`);
+      whereClause = `WHERE name ILIKE $1 OR description ILIKE $1`;
     }
 
-    // 페이지네이션
-    const paginatedCreators = creators.slice(offset, offset + limit);
+    // 전체 카운트를 가져오는 쿼리
+    const totalResult = await client.query(`SELECT COUNT(*) FROM creators ${whereClause}`, searchParamsList);
+    const total = parseInt(totalResult.rows[0].count, 10);
 
-    return NextResponse.json({
-      success: true,
-      data: paginatedCreators,
-      total: creators.length,
-      offset,
-      limit
+    // 페이지네이션된 데이터를 가져오는 쿼리
+    const dataParams = [...searchParamsList];
+    const limitIndex = dataParams.length + 1;
+    const offsetIndex = dataParams.length + 2;
+    dataParams.push(limit, offset);
+
+    const dataQuery = `SELECT * FROM creators ${whereClause} ORDER BY subscribers DESC LIMIT $${limitIndex} OFFSET $${offsetIndex}`;
+    const dataResult = await client.query(dataQuery, dataParams);
+
+    const creators = dataResult.rows.map(mapToCreatorObject);
+
+    return NextResponse.json({ 
+      success: true, 
+      data: creators, 
+      total: total,
+      page: page,
+      limit: limit
     });
   } catch (error) {
-    console.error('Error fetching creators:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch creators' },
-      { status: 500 }
-    );
+    console.error('Database Error:', error);
+    return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }

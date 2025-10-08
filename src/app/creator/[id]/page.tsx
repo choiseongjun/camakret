@@ -260,11 +260,11 @@ export default function CreatorDetail() {
                   YouTube 채널
                 </a>
                 <Link
-                  href={`/fanclub/${creator.id}`}
+                  href={`/community/${creator.id}`}
                   className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-full font-medium hover:shadow-lg transition"
                 >
                   <Users className="w-4 h-4" />
-                  팬클럽
+                  소통공간
                 </Link>
                 <button
                   onClick={() => setShowReviewForm(true)}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import { Search, Star, Users, Filter, TrendingUp, Heart, MessageCircle } from 'lucide-react';
+import { Search, Star, Users, Filter, TrendingUp, Heart, MessageCircle, ArrowRight } from 'lucide-react';
 
 interface Creator {
   id: string;
@@ -28,28 +28,54 @@ interface Creator {
   };
 }
 
+const PAGE_SIZE = 12;
+
 export default function Home() {
-  const [creators, setCreators] = useState<Creator[]>([]);
+  const [allCreators, setAllCreators] = useState<Creator[]>([]);
   const [filteredCreators, setFilteredCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCreators, setTotalCreators] = useState(0);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
 
   useEffect(() => {
-    fetchCreators();
+    fetchInitialCreators();
   }, []);
 
   useEffect(() => {
-    filterCreators();
-  }, [creators, searchTerm, selectedStyle, selectedSize]);
+    // 클라이언트 사이드 필터링
+    let filtered = allCreators;
+    if (searchTerm) {
+      filtered = filtered.filter(creator =>
+        creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        creator.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    if (selectedStyle) {
+      filtered = filtered.filter(creator =>
+        creator.foodCategories.style.includes(selectedStyle)
+      );
+    }
+    if (selectedSize) {
+      filtered = filtered.filter(creator =>
+        creator.foodCategories.channelSize === selectedSize
+      );
+    }
+    setFilteredCreators(filtered);
+  }, [allCreators, searchTerm, selectedStyle, selectedSize]);
 
-  const fetchCreators = async () => {
+  const fetchInitialCreators = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/creators?limit=12');
+      const response = await fetch(`/api/creators?page=1&limit=${PAGE_SIZE}`);
       const data = await response.json();
       if (data.success) {
-        setCreators(data.data);
+        setAllCreators(data.data);
+        setTotalCreators(data.total);
       }
     } catch (error) {
       console.error('크리에이터 데이터 로드 실패:', error);
@@ -58,29 +84,23 @@ export default function Home() {
     }
   };
 
-  const filterCreators = () => {
-    let filtered = creators;
+  const handleLoadMore = async () => {
+    if (loadingMore || allCreators.length >= totalCreators) return;
 
-    if (searchTerm) {
-      filtered = filtered.filter(creator =>
-        creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        creator.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const response = await fetch(`/api/creators?page=${nextPage}&limit=${PAGE_SIZE}`);
+      const data = await response.json();
+      if (data.success) {
+        setAllCreators(prev => [...prev, ...data.data]);
+        setPage(nextPage);
+      }
+    } catch (error) {
+      console.error('추가 데이터 로드 실패:', error);
+    } finally {
+      setLoadingMore(false);
     }
-
-    if (selectedStyle) {
-      filtered = filtered.filter(creator =>
-        creator.foodCategories.style.includes(selectedStyle)
-      );
-    }
-
-    if (selectedSize) {
-      filtered = filtered.filter(creator =>
-        creator.foodCategories.channelSize === selectedSize
-      );
-    }
-
-    setFilteredCreators(filtered);
   };
 
   const formatNumber = (num: number) => {
@@ -100,6 +120,8 @@ export default function Home() {
     ));
   };
 
+  const hasMoreCreators = allCreators.length < totalCreators;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
       {/* Header */}
@@ -112,10 +134,11 @@ export default function Home() {
               </div>
               <span className="text-xl font-bold text-gray-900">CreatorHub</span>
             </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="#creators" className="text-gray-600 hover:text-gray-900 transition">크리에이터</Link>
-              <Link href="/community" className="text-gray-600 hover:text-gray-900 transition">커뮤니티</Link>
-              <Link href="#about" className="text-gray-600 hover:text-gray-900 transition">소개</Link>
+              <nav className="hidden md:flex items-center gap-8">
+                <Link href="/creators" className="text-gray-600 hover:text-gray-900 transition">크리에이터</Link>
+                <Link href="/community" className="text-gray-600 hover:text-gray-900 transition">커뮤니티</Link>
+                <Link href="/reviews" className="text-gray-600 hover:text-gray-900 transition">리뷰</Link>
+                <Link href="#about" className="text-gray-600 hover:text-gray-900 transition">소개</Link>
               <Link href="/login" className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-medium hover:shadow-lg transition">
                 로그인
               </Link>
@@ -207,7 +230,7 @@ export default function Home() {
             인기 먹방 크리에이터
           </h2>
           <p className="text-gray-600">
-            {loading ? '로딩 중...' : `${filteredCreators.length}개의 크리에이터를 찾았습니다`}
+            {loading ? '로딩 중...' : `${totalCreators}명의 크리에이터 중 ${filteredCreators.length}개를 찾았습니다`}
           </p>
         </div>
 
@@ -294,6 +317,19 @@ export default function Home() {
             ))}
           </div>
         )}
+
+        {/* 더보기 버튼 */}
+        <div className="text-center mt-12">
+          {hasMoreCreators && (
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-semibold text-lg hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? '로딩 중...' : '더보기'}
+            </button>
+          )}
+        </div>
       </section>
 
       {/* Features Section */}

@@ -1,0 +1,237 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { Search, Star, Users, Eye } from 'lucide-react';
+
+// Debounce hook to prevent excessive API calls while typing
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
+
+interface Creator {
+  id: string;
+  name: string;
+  description: string;
+  thumbnail: string;
+  statistics: {
+    subscribers: number;
+    totalViews: number;
+    videoCount: number;
+  };
+  foodCategories: {
+    style: string[];
+    foodType: string[];
+    channelSize: string;
+  };
+  reviewStats: {
+    averageRating: number;
+    totalReviews: number;
+  };
+  links: {
+    channel: string;
+  };
+}
+
+const PAGE_SIZE = 12;
+
+export default function CreatorsListPage() {
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCreators, setTotalCreators] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const fetchCreators = useCallback(async (page: number, search: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/creators?page=${page}&limit=${PAGE_SIZE}&search=${search}`);
+      const data = await response.json();
+      if (data.success) {
+        setCreators(data.data);
+        setTotalCreators(data.total);
+        setTotalPages(Math.ceil(data.total / PAGE_SIZE));
+      }
+    } catch (error) {
+      console.error('크리에이터 데이터 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 검색어가 변경되면, 페이지를 1로 리셋합니다.
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [debouncedSearchTerm]);
+
+  // 페이지나 검색어가 변경되면 데이터를 불러옵니다.
+  useEffect(() => {
+    fetchCreators(currentPage, debouncedSearchTerm);
+  }, [currentPage, debouncedSearchTerm, fetchCreators]);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(
+        <button
+          key={i}
+          onClick={() => setCurrentPage(i)}
+          className={`px-4 py-2 rounded-lg font-medium ${
+            currentPage === i
+              ? 'bg-orange-500 text-white'
+              : 'text-gray-600 hover:bg-gray-50'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-8">
+        <button
+          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          이전
+        </button>
+        {startPage > 1 && <span className="px-4 py-2">...</span>}
+        {pageNumbers}
+        {endPage < totalPages && <span className="px-4 py-2">...</span>}
+        <button
+          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          다음
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">🎬</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">CreatorHub</span>
+            </Link>
+            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+              ← 홈으로
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">전체 크리에이터</h1>
+          <p className="text-lg text-gray-600">CreatorHub에 등록된 {totalCreators}명의 크리에이터를 만나보세요.</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative max-w-2xl mx-auto mb-12">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="전체 크리에이터 이름 또는 설명으로 검색..."
+            className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl p-6 shadow-lg animate-pulse">
+                <div className="w-20 h-20 bg-gray-300 rounded-full mx-auto mb-4"></div>
+                <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
+                <div className="h-3 bg-gray-300 rounded w-1/2 mx-auto mb-4"></div>
+                <div className="h-3 bg-gray-300 rounded w-full"></div>
+                <div className="h-3 bg-gray-300 rounded w-full mt-1"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {creators.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {creators.map((creator) => (
+                  <div key={creator.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="flex flex-col items-center text-center">
+                      <img
+                        src={creator.thumbnail}
+                        alt={creator.name}
+                        className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-orange-100"
+                        onError={(e) => { e.currentTarget.src = '/default-avatar.png'; }}
+                      />
+                      <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">{creator.name}</h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1"><Users className="w-4 h-4" />{formatNumber(creator.statistics.subscribers)}</div>
+                        <div className="flex items-center gap-1"><Eye className="w-4 h-4" />{formatNumber(creator.statistics.totalViews)}</div>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed h-10">
+                        {creator.description}
+                      </p>
+                      <Link
+                        href={`/creator/${creator.id}`}
+                        className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-center text-sm font-medium hover:shadow-lg transition"
+                      >
+                        상세보기
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-gray-500 text-lg">검색 결과가 없습니다.</p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {renderPagination()}
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
