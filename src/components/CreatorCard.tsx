@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Users, Eye } from 'lucide-react';
+import { Users, Eye, Star } from 'lucide-react';
 
 interface Creator {
   id: string;
@@ -78,6 +78,19 @@ export default function CreatorCard({ creator }: CreatorCardProps) {
           <div className="mb-2">
             <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full text-xs font-semibold">
               📂 {creator.category}
+            </span>
+          </div>
+        )}
+
+        {/* 별점 */}
+        {creator.reviewStats && creator.reviewStats.totalReviews > 0 && (
+          <div className="flex items-center gap-1 mb-2">
+            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+            <span className="text-sm font-bold text-gray-900">
+              {creator.reviewStats.averageRating.toFixed(1)}
+            </span>
+            <span className="text-xs text-gray-500">
+              ({creator.reviewStats.totalReviews})
             </span>
           </div>
         )}
