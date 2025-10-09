@@ -194,36 +194,6 @@ export default function CreatorsListPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">🎬</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">CreatorHub</span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/" className="text-sm text-gray-600 hover:text-gray-900"> ← 홈으로</Link>
-              {!authLoading && (
-                user ? (
-                  <>
-                    <span className="text-gray-800 text-sm font-medium">{user.name}님</span>
-                    <button onClick={logout} className="text-sm text-gray-600 hover:text-gray-900">
-                      로그아웃
-                    </button>
-                  </>
-                ) : (
-                  <button onClick={login} className="text-sm font-medium text-orange-600 hover:text-orange-500">
-                    로그인
-                  </button>
-                )
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">전체 크리에이터</h1>
