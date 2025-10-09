@@ -57,6 +57,7 @@ export default function CreatorDetail() {
 
   const [creator, setCreator] = useState<Creator | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [similarCreators, setSimilarCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({
@@ -74,12 +75,21 @@ export default function CreatorDetail() {
 
   const fetchCreatorDetail = async () => {
     try {
-      const response = await apiFetch(`api/creators/${creatorId}`);
-      const data = await response.json();
+      const [creatorResponse, similarResponse] = await Promise.all([
+        apiFetch(`api/creators/${creatorId}`),
+        apiFetch(`api/creators/${creatorId}/similar`)
+      ]);
 
-      if (data.success) {
-        setCreator(data.data);
-        setReviews(data.data.reviews || []);
+      const creatorData = await creatorResponse.json();
+      const similarData = await similarResponse.json();
+
+      if (creatorData.success) {
+        setCreator(creatorData.data);
+        setReviews(creatorData.data.reviews || []);
+      }
+
+      if (similarData.success) {
+        setSimilarCreators(similarData.data);
       }
     } catch (error) {
       console.error('크리에이터 정보 로드 실패:', error);
@@ -367,6 +377,71 @@ export default function CreatorDetail() {
             </div>
           )}
         </div>
+
+        {/* Similar Creators */}
+        {similarCreators.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 mt-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">비슷한 크리에이터</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similarCreators.map((similar) => (
+                <Link
+                  key={similar.id}
+                  href={`/creator/${similar.id}`}
+                  className="group border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all hover:border-orange-300"
+                >
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={similar.thumbnail}
+                      alt={similar.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/default-avatar.png';
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 mb-1 truncate group-hover:text-orange-600 transition">
+                        {similar.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${
+                                i < Math.floor(similar.reviewStats.averageRating)
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-600">
+                          {similar.reviewStats.averageRating.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Users className="w-3 h-3" />
+                        <span>{formatNumber(similar.statistics.subscribers)}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {similar.foodCategories.style.slice(0, 2).map((style, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">
+                            {style}
+                          </span>
+                        ))}
+                        {similar.foodCategories.foodType.slice(0, 1).map((type, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Review Form Modal */}

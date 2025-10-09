@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search } from 'lucide-react';
+import { Search, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import CreatorCard from '@/components/CreatorCard';
 import { apiFetch } from '@/lib/api';
 
@@ -60,42 +60,95 @@ export default function CreatorsListPage() {
   const [channelSizeFilter, setChannelSizeFilter] = useState<string>('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const fetchCreators = useCallback(async (page: number, search: string, channelSize: string) => {
+  // 맞춤 추천 필터 상태
+  const [showRecommendationFilters, setShowRecommendationFilters] = useState(false);
+  const [isPersonalized, setIsPersonalized] = useState(false);
+  const [channelSizePrefs, setChannelSizePrefs] = useState<string[]>([]);
+  const [stylePrefs, setStylePrefs] = useState<string[]>([]);
+  const [foodTypePrefs, setFoodTypePrefs] = useState<string[]>([]);
+  const [minRating, setMinRating] = useState<number>(0);
+  const [activeOnly, setActiveOnly] = useState<boolean>(false);
+
+  const styleOptions = ['ASMR', '일반', '요리'];
+  const foodTypeOptions = ['한식', '양식', '중식', '일식', '다양'];
+  const channelSizeOptions = ['소형', '중형', '대형'];
+
+  const fetchCreators = useCallback(async (
+    page: number,
+    search: string,
+    channelSize: string,
+    useRecommendation: boolean = false
+  ) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: PAGE_SIZE.toString(),
-        search: search,
-      });
+      if (useRecommendation && showRecommendationFilters) {
+        // 맞춤 추천 API 호출
+        const response = await apiFetch('api/recommendations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            channelSize: channelSizePrefs,
+            style: stylePrefs,
+            foodType: foodTypePrefs,
+            minRating,
+            activeOnly,
+            keywords: search,
+            userId: user?.id || null
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          setCreators(data.data);
+          setTotalCreators(data.total || 0);
+          setIsPersonalized(data.isPersonalized || false);
+          // 추천은 페이지네이션 없이 한 번에 보여줌
+          setTotalPages(1);
+        }
+      } else {
+        // 일반 목록 API 호출
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: PAGE_SIZE.toString(),
+          search: search,
+        });
 
-      if (channelSize) {
-        params.append('channelSize', channelSize);
-      }
+        if (channelSize) {
+          params.append('channelSize', channelSize);
+        }
 
-      const response = await apiFetch(`api/creators?${params}`);
-      const data = await response.json();
-      if (data.success) {
-        setCreators(data.data);
-        setTotalCreators(data.pagination?.totalItems || 0);
-        setTotalPages(data.pagination?.totalPages || 0);
+        const response = await apiFetch(`api/creators?${params}`);
+        const data = await response.json();
+        if (data.success) {
+          setCreators(data.data);
+          setTotalCreators(data.pagination?.totalItems || 0);
+          setTotalPages(data.pagination?.totalPages || 0);
+          setIsPersonalized(false);
+        }
       }
     } catch (error) {
       console.error('크리에이터 데이터 로드 실패:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showRecommendationFilters, channelSizePrefs, stylePrefs, foodTypePrefs, minRating, activeOnly, user]);
 
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [debouncedSearchTerm, channelSizeFilter]);
+  }, [debouncedSearchTerm, channelSizeFilter, showRecommendationFilters]);
 
   useEffect(() => {
-    fetchCreators(currentPage, debouncedSearchTerm, channelSizeFilter);
-  }, [currentPage, debouncedSearchTerm, channelSizeFilter, fetchCreators]);
+    fetchCreators(currentPage, debouncedSearchTerm, channelSizeFilter, showRecommendationFilters);
+  }, [currentPage, debouncedSearchTerm, channelSizeFilter, showRecommendationFilters, fetchCreators]);
+
+  const toggleArrayItem = (arr: string[], setArr: (arr: string[]) => void, value: string) => {
+    if (arr.includes(value)) {
+      setArr(arr.filter(v => v !== value));
+    } else {
+      setArr([...arr, value]);
+    }
+  };
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -191,39 +244,170 @@ export default function CreatorsListPage() {
             />
           </div>
 
-          <div className="flex justify-center gap-3">
-            <button
-              onClick={() => setChannelSizeFilter('')}
-              className={`px-6 py-2 rounded-full font-medium transition ${
-                channelSizeFilter === '' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-              }`}
-            >
-              전체
-            </button>
-            <button
-              onClick={() => setChannelSizeFilter('대형')}
-              className={`px-6 py-2 rounded-full font-medium transition ${
-                channelSizeFilter === '대형' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-              }`}
-            >
-              대형
-            </button>
-            <button
-              onClick={() => setChannelSizeFilter('중형')}
-              className={`px-6 py-2 rounded-full font-medium transition ${
-                channelSizeFilter === '중형' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-              }`}
-            >
-              중형
-            </button>
-            <button
-              onClick={() => setChannelSizeFilter('소형')}
-              className={`px-6 py-2 rounded-full font-medium transition ${
-                channelSizeFilter === '소형' ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-              }`}
-            >
-              소형
-            </button>
+          <div className="flex flex-col gap-3">
+            {/* 맞춤 추천 버튼 */}
+            <div className="flex justify-center mb-2">
+              <button
+                onClick={() => setShowRecommendationFilters(!showRecommendationFilters)}
+                className={`px-8 py-3 rounded-full font-bold transition flex items-center gap-2 ${
+                  showRecommendationFilters
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-purple-300'
+                }`}
+              >
+                <Sparkles className="w-5 h-5" />
+                맞춤 추천 필터
+                {showRecommendationFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+
+            {/* 맞춤 추천 상세 필터 */}
+            {showRecommendationFilters && (
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-4 border-2 border-purple-200">
+                {isPersonalized && user && (
+                  <div className="mb-4 p-3 bg-purple-50 rounded-lg">
+                    <p className="text-sm text-purple-700 font-medium">
+                      ✨ {user.name}님의 리뷰를 분석한 AI 맞춤 추천이 적용되었습니다!
+                    </p>
+                  </div>
+                )}
+
+                {/* 채널 규모 */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">채널 규모</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {channelSizeOptions.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => toggleArrayItem(channelSizePrefs, setChannelSizePrefs, size)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                          channelSizePrefs.includes(size)
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 콘텐츠 스타일 */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">콘텐츠 스타일</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {styleOptions.map((style) => (
+                      <button
+                        key={style}
+                        onClick={() => toggleArrayItem(stylePrefs, setStylePrefs, style)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                          stylePrefs.includes(style)
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {style}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 음식 종류 */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">음식 종류</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {foodTypeOptions.map((food) => (
+                      <button
+                        key={food}
+                        onClick={() => toggleArrayItem(foodTypePrefs, setFoodTypePrefs, food)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                          foodTypePrefs.includes(food)
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {food}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 최소 평점 */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                    최소 평점: {minRating.toFixed(1)}★
+                  </h3>
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.5"
+                    value={minRating}
+                    onChange={(e) => setMinRating(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0★</span>
+                    <span>5★</span>
+                  </div>
+                </div>
+
+                {/* 활동성 필터 */}
+                <div className="mb-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={activeOnly}
+                      onChange={(e) => setActiveOnly(e.target.checked)}
+                      className="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 font-medium">
+                      🎬 최근 활동 중인 크리에이터만
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* 기존 필터 (맞춤 추천 모드가 아닐 때만 표시) */}
+            {!showRecommendationFilters && (
+              <>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={() => setChannelSizeFilter('')}
+                    className={`px-6 py-2 rounded-full font-medium transition ${
+                      channelSizeFilter === '' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    전체
+                  </button>
+                  <button
+                    onClick={() => setChannelSizeFilter('대형')}
+                    className={`px-6 py-2 rounded-full font-medium transition ${
+                      channelSizeFilter === '대형' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    대형
+                  </button>
+                  <button
+                    onClick={() => setChannelSizeFilter('중형')}
+                    className={`px-6 py-2 rounded-full font-medium transition ${
+                      channelSizeFilter === '중형' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    중형
+                  </button>
+                  <button
+                    onClick={() => setChannelSizeFilter('소형')}
+                    className={`px-6 py-2 rounded-full font-medium transition ${
+                      channelSizeFilter === '소형' ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    소형
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

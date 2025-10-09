@@ -114,39 +114,7 @@ export default function Home() {
   const hasMoreCreators = false; // 메인 페이지에서는 더보기 비활성화
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">🎬</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">CreatorHub</span>
-            </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/creators" className="text-gray-600 hover:text-gray-900 transition">크리에이터</Link>
-              <Link href="/community" className="text-gray-600 hover:text-gray-900 transition">커뮤니티</Link>
-              <Link href="/reviews" className="text-gray-600 hover:text-gray-900 transition">리뷰</Link>
-              {!authLoading && (
-                user ? (
-                  <>
-                    <span className="text-gray-800 font-medium">{user.name}님</span>
-                    <button onClick={logout} className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition">
-                      로그아웃
-                    </button>
-                  </>
-                ) : (
-                  <Link href="/login" className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-medium hover:shadow-lg transition">
-                    로그인
-                  </Link>
-                )
-              )}
-            </nav>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-gradient-to-br from-orange-50 via-white to-red-50">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -248,16 +216,16 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-orange-50 to-red-50 hover:shadow-lg transition">
+            <Link href="/recommendations" className="text-center p-8 rounded-2xl bg-gradient-to-br from-orange-50 to-red-50 hover:shadow-lg transition block">
               <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl">🎯</span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">맞춤 추천</h3>
               <p className="text-gray-600">
-                당신의 취향에 맞는 크리에이터를 AI가 추천해드립니다.
-                카테고리, 키워드, 구독자 수 등 다양한 필터로 원하는 크리에이터를 쉽게 찾아보세요.
+                당신의 취향에 맞는 크리에이터를 추천해드립니다.
+                채널 규모, 스타일, 음식 종류 등 다양한 필터로 원하는 크리에이터를 쉽게 찾아보세요.
               </p>
-            </div>
+            </Link>
 
             <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 hover:shadow-lg transition">
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -324,39 +292,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">🎬</span>
-                </div>
-                <span className="text-xl font-bold text-white">CreatorHub</span>
-              </div>
-              <p className="text-sm">
-                크리에이터와 팬을 연결하는<br />
-                최고의 플랫폼
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-white font-semibold mb-4">서비스</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/creators" className="hover:text-white transition">크리에이터</Link></li>
-                <li><Link href="/community" className="hover:text-white transition">커뮤니티</Link></li>
-                <li><Link href="/reviews" className="hover:text-white transition">리뷰</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2025 CreatorHub. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
