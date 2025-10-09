@@ -10,7 +10,7 @@ export default function Booking() {
 
   const services = {
     consulting: {
-      name: "1:1 뷰티 컨설팅",
+      name: "1:1 뷰티 컨설팅1",
       price: 50000,
       duration: "60분",
       description: "화상으로 만나는 개인 맞춤 컨설팅",
