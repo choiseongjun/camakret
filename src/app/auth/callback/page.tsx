@@ -4,6 +4,7 @@ import { useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
+//
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
