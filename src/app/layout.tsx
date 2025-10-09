@@ -41,11 +41,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <head>
-        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
-                integrity="sha384-TiCUE00h+gjGmGjWU1Hj/MbIJ46+nMgq+AJ6eZgNCbMbHl68jzvUHPW4AszNO04v"
-                crossOrigin="anonymous" async></script>
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -24,40 +24,6 @@ export default function ShareButton({ title, description, url, imageUrl }: Share
     }
   };
 
-  const handleKakaoShare = () => {
-    if (typeof window !== 'undefined' && (window as any).Kakao) {
-      const kakao = (window as any).Kakao;
-
-      if (!kakao.isInitialized()) {
-        kakao.init(process.env.NEXT_PUBLIC_KAKAO_KEY || 'YOUR_KAKAO_KEY');
-      }
-
-      kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: title,
-          description: description,
-          imageUrl: imageUrl || 'https://creatorhub.kr/og-image.png',
-          link: {
-            mobileWebUrl: url,
-            webUrl: url,
-          },
-        },
-        buttons: [
-          {
-            title: '자세히 보기',
-            link: {
-              mobileWebUrl: url,
-              webUrl: url,
-            },
-          },
-        ],
-      });
-    } else {
-      alert('카카오톡 공유 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-    }
-  };
-
   const handleTwitterShare = () => {
     const text = `${title}\n\n${description}`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
@@ -93,17 +59,6 @@ export default function ShareButton({ title, description, url, imageUrl }: Share
             </div>
 
             <div className="space-y-3">
-              {/* 카카오톡 공유 */}
-              <button
-                onClick={handleKakaoShare}
-                className="w-full flex items-center gap-4 p-4 bg-yellow-400 hover:bg-yellow-500 rounded-xl transition"
-              >
-                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">💬</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">카카오톡으로 공유</span>
-              </button>
-
               {/* 트위터 공유 */}
               <button
                 onClick={handleTwitterShare}
