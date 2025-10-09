@@ -2,25 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import { Search, Star, Users, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import CreatorCard from '@/components/CreatorCard';
 
 interface Creator {
   id: string;
   name: string;
   description: string;
   thumbnail: string;
+  keywords?: string[];
+  category?: string;
   statistics: {
     subscribers: number;
     totalViews: number;
     videoCount: number;
   };
   foodCategories: {
-    style: string[];
-    foodType: string[];
+    style?: string[];
+    foodType?: string[];
     channelSize: string;
   };
-  reviewStats: {
+  reviewStats?: {
     averageRating: number;
     totalReviews: number;
   };
@@ -72,11 +75,14 @@ export default function Home() {
   const fetchInitialCreators = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/creators?page=1&limit=${PAGE_SIZE}`);
+      // 랜덤하게 정렬된 크리에이터 가져오기
+      const response = await fetch(`/api/creators?page=1&limit=50&sortBy=random`);
       const data = await response.json();
       if (data.success) {
-        setAllCreators(data.data);
-        setTotalCreators(data.total);
+        // 응답 데이터를 섞어서 무작위로 표시
+        const shuffled = [...data.data].sort(() => Math.random() - 0.5);
+        setAllCreators(shuffled);
+        setTotalCreators(data.pagination?.totalItems || data.total || shuffled.length);
       }
     } catch (error) {
       console.error('크리에이터 데이터 로드 실패:', error);
@@ -104,24 +110,7 @@ export default function Home() {
     }
   };
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
-      />
-    ));
-  };
-
-  const hasMoreCreators = allCreators.length < totalCreators;
+  const hasMoreCreators = false; // 메인 페이지에서는 더보기 비활성화
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
@@ -231,8 +220,8 @@ export default function Home() {
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-gray-100 rounded-2xl p-6 animate-pulse">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="bg-gray-100 rounded-2xl p-6 animate-pulse h-[400px]">
                   <div className="w-20 h-20 bg-gray-300 rounded-full mx-auto mb-4"></div>
                   <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
                   <div className="h-3 bg-gray-300 rounded w-1/2 mx-auto"></div>
@@ -240,78 +229,133 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredCreators.slice(0, 8).map((creator) => (
-                  <Link
-                    key={creator.id}
-                    href={`/creator/${creator.id}`}
-                    className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
-                  >
-                    <div className="flex flex-col items-center text-center">
-                      <img
-                        src={creator.thumbnail}
-                        alt={creator.name}
-                        className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-orange-100"
-                        onError={(e) => { e.currentTarget.src = '/default-avatar.png'; }}
-                      />
-                      <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">
-                        {creator.name}
-                      </h3>
-                      <div className="flex items-center gap-1 mb-3">
-                        {renderStars(creator.reviewStats.averageRating)}
-                        <span className="text-sm text-gray-600 ml-1">
-                          ({creator.reviewStats.totalReviews})
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          {formatNumber(creator.statistics.subscribers)}
-                        </div>
-                      </div>
-                      <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                        {creator.description}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-              {hasMoreCreators && (
-                <div className="text-center mt-12">
-                  <button
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
-                    className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-medium hover:shadow-lg transition disabled:opacity-50"
-                  >
-                    {loadingMore ? '로딩 중...' : '더 보기'}
-                  </button>
-                </div>
-              )}
-            </>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredCreators.slice(0, 12).map((creator) => (
+                <CreatorCard key={creator.id} creator={creator} />
+              ))}
+            </div>
           )}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 to-red-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            크리에이터가 되어보세요
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            당신의 콘텐츠를 더 많은 사람들과 공유하세요
-          </p>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-semibold text-lg hover:shadow-xl transition transform hover:-translate-y-1"
-          >
-            시작하기
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">CreatorHub가 특별한 이유</h2>
+            <p className="text-xl text-gray-600">크리에이터와 팬을 연결하는 최고의 플랫폼</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-orange-50 to-red-50 hover:shadow-lg transition">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">🎯</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">맞춤 추천</h3>
+              <p className="text-gray-600">
+                당신의 취향에 맞는 크리에이터를 AI가 추천해드립니다.
+                카테고리, 키워드, 구독자 수 등 다양한 필터로 원하는 크리에이터를 쉽게 찾아보세요.
+              </p>
+            </div>
+
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 hover:shadow-lg transition">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">💬</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">활발한 커뮤니티</h3>
+              <p className="text-gray-600">
+                크리에이터와 팬들이 소통하는 공간.
+                리뷰를 남기고, 커뮤니티 게시글로 의견을 공유하며 함께 성장하세요.
+              </p>
+            </div>
+
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 hover:shadow-lg transition">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">⭐</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">신뢰할 수 있는 정보</h3>
+              <p className="text-gray-600">
+                실제 사용자들의 리뷰와 평점으로 검증된 크리에이터 정보.
+                투명하고 정확한 통계 데이터를 제공합니다.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Stats Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-5xl font-bold mb-2">{totalCreators.toLocaleString()}+</div>
+              <div className="text-xl text-gray-300">검증된 크리에이터</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold mb-2">24/7</div>
+              <div className="text-xl text-gray-300">실시간 업데이트</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold mb-2">100%</div>
+              <div className="text-xl text-gray-300">무료 서비스</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - 로그인 안된 사용자만 */}
+      {!authLoading && !user && (
+        <section className="py-20 bg-gradient-to-br from-orange-50 to-red-50">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              지금 바로 시작하세요
+            </h2>
+            <p className="text-xl text-gray-600 mb-8">
+              CreatorHub에서 당신이 좋아하는 크리에이터를 발견하고 소통하세요
+            </p>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-semibold text-lg hover:shadow-xl transition transform hover:-translate-y-1"
+            >
+              시작하기
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">🎬</span>
+                </div>
+                <span className="text-xl font-bold text-white">CreatorHub</span>
+              </div>
+              <p className="text-sm">
+                크리에이터와 팬을 연결하는<br />
+                최고의 플랫폼
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-white font-semibold mb-4">서비스</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/creators" className="hover:text-white transition">크리에이터</Link></li>
+                <li><Link href="/community" className="hover:text-white transition">커뮤니티</Link></li>
+                <li><Link href="/reviews" className="hover:text-white transition">리뷰</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8 text-center text-sm">
+            <p>&copy; 2025 CreatorHub. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

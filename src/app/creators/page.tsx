@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, Star, Users, Eye } from 'lucide-react';
+import { Search } from 'lucide-react';
+import CreatorCard from '@/components/CreatorCard';
 
 // Debounce hook to prevent excessive API calls while typing
 function useDebounce(value: string, delay: number) {
@@ -24,6 +25,8 @@ interface Creator {
   name: string;
   description: string;
   thumbnail: string;
+  keywords: string[];
+  category: string;
   statistics: {
     subscribers: number;
     totalViews: number;
@@ -53,12 +56,23 @@ export default function CreatorsListPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCreators, setTotalCreators] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [channelSizeFilter, setChannelSizeFilter] = useState<string>('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const fetchCreators = useCallback(async (page: number, search: string) => {
+  const fetchCreators = useCallback(async (page: number, search: string, channelSize: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/creators?page=${page}&limit=${PAGE_SIZE}&search=${search}`);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: PAGE_SIZE.toString(),
+        search: search,
+      });
+
+      if (channelSize) {
+        params.append('channelSize', channelSize);
+      }
+
+      const response = await fetch(`/api/creators?${params}`);
       const data = await response.json();
       if (data.success) {
         setCreators(data.data);
@@ -76,11 +90,11 @@ export default function CreatorsListPage() {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, channelSizeFilter]);
 
   useEffect(() => {
-    fetchCreators(currentPage, debouncedSearchTerm);
-  }, [currentPage, debouncedSearchTerm, fetchCreators]);
+    fetchCreators(currentPage, debouncedSearchTerm, channelSizeFilter);
+  }, [currentPage, debouncedSearchTerm, channelSizeFilter, fetchCreators]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -162,17 +176,54 @@ export default function CreatorsListPage() {
           <p className="text-lg text-gray-600">CreatorHub에 등록된 {totalCreators}명의 크리에이터를 만나보세요.</p>
         </div>
 
-        <div className="relative max-w-2xl mx-auto mb-12">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="relative mb-4">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="크리에이터 이름, 설명, 키워드로 검색..."
+              className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            placeholder="전체 크리에이터 이름 또는 설명으로 검색..."
-            className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => setChannelSizeFilter('')}
+              className={`px-6 py-2 rounded-full font-medium transition ${
+                channelSizeFilter === '' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+              }`}
+            >
+              전체
+            </button>
+            <button
+              onClick={() => setChannelSizeFilter('대형')}
+              className={`px-6 py-2 rounded-full font-medium transition ${
+                channelSizeFilter === '대형' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+              }`}
+            >
+              대형
+            </button>
+            <button
+              onClick={() => setChannelSizeFilter('중형')}
+              className={`px-6 py-2 rounded-full font-medium transition ${
+                channelSizeFilter === '중형' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+              }`}
+            >
+              중형
+            </button>
+            <button
+              onClick={() => setChannelSizeFilter('소형')}
+              className={`px-6 py-2 rounded-full font-medium transition ${
+                channelSizeFilter === '소형' ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
+              }`}
+            >
+              소형
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -192,30 +243,7 @@ export default function CreatorsListPage() {
             {creators.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {creators.map((creator) => (
-                  <div key={creator.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="flex flex-col items-center text-center">
-                      <img
-                        src={creator.thumbnail}
-                        alt={creator.name}
-                        className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-orange-100"
-                        onError={(e) => { e.currentTarget.src = '/default-avatar.png'; }}
-                      />
-                      <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">{creator.name}</h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                        <div className="flex items-center gap-1"><Users className="w-4 h-4" />{formatNumber(creator.statistics.subscribers)}</div>
-                        <div className="flex items-center gap-1"><Eye className="w-4 h-4" />{formatNumber(creator.statistics.totalViews)}</div>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed h-10">
-                        {creator.description}
-                      </p>
-                      <Link
-                        href={`/creator/${creator.id}`}
-                        className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-center text-sm font-medium hover:shadow-lg transition"
-                      >
-                        상세보기
-                      </Link>
-                    </div>
-                  </div>
+                  <CreatorCard key={creator.id} creator={creator} />
                 ))}
               </div>
             ) : (
