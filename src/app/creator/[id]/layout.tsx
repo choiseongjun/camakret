@@ -2,12 +2,12 @@ import { Metadata } from 'next';
 import { API_BASE_URL } from '@/lib/api';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   children: React.ReactNode;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const creatorId = params.id;
+  const { id: creatorId } = await params;
 
   try {
     // 서버에서 크리에이터 정보 가져오기
