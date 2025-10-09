@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp } from 'lucide-react';
 import { StarRating } from '@/app/components/StarRating';
 import { apiFetch } from '@/lib/api';
+import ShareButton from '@/components/ShareButton';
 
 interface Creator {
   id: string;
@@ -234,7 +235,7 @@ export default function CreatorDetail() {
                 {creator.description}
               </p>
 
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3">
                 <a
                   href={creator.links.channel}
                   target="_blank"
@@ -258,6 +259,12 @@ export default function CreatorDetail() {
                   <MessageCircle className="w-4 h-4" />
                   리뷰 작성
                 </button>
+                <ShareButton
+                  title={`${creator.name} - CreatorHub`}
+                  description={`${creator.name} 크리에이터를 추천합니다! 구독자 ${formatNumber(creator.statistics.subscribers)}, 평점 ${creator.reviewStats.averageRating.toFixed(1)}⭐ CreatorHub에서 확인하세요!`}
+                  url={`https://creatorhub.kr/creator/${creator.id}`}
+                  imageUrl={creator.thumbnail}
+                />
               </div>
             </div>
           </div>
