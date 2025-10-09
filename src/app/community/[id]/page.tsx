@@ -74,7 +74,8 @@ export default function CreatorCommunity() {
 
   const fetchCreatorDetail = async () => {
     try {
-      const response = await fetch(`/api/creators/${creatorId}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/creators/${creatorId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -87,7 +88,8 @@ export default function CreatorCommunity() {
 
   const fetchCommunityPosts = async () => {
     try {
-      const response = await fetch(`/api/community?creatorId=${creatorId}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/community?creatorId=${creatorId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -109,7 +111,8 @@ export default function CreatorCommunity() {
     }
 
     try {
-      const response = await fetch(`/api/community`,
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/community`,
         {
           method: 'POST',
           headers: {

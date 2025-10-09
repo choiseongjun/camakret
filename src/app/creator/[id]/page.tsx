@@ -72,7 +72,8 @@ export default function CreatorDetail() {
 
   const fetchCreatorDetail = async () => {
     try {
-      const response = await fetch(`/api/creators/${creatorId}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/creators/${creatorId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -90,7 +91,8 @@ export default function CreatorDetail() {
     if (!newReview.rating || !newReview.content.trim()) return;
 
     try {
-      const response = await fetch('/api/reviews', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
