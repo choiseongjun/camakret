@@ -2,8 +2,9 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function NotionPreview() {
+function PreviewContent() {
   const searchParams = useSearchParams();
   const template = searchParams.get("template") || "minimal";
   const id = searchParams.get("id") || "demo";
@@ -157,5 +158,20 @@ export default function NotionPreview() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NotionPreview() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">미리보기를 불러오는 중...</p>
+        </div>
+      </div>
+    }>
+      <PreviewContent />
+    </Suspense>
   );
 }
