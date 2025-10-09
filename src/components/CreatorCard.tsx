@@ -83,17 +83,17 @@ export default function CreatorCard({ creator }: CreatorCardProps) {
         )}
 
         {/* 별점 */}
-        {creator.reviewStats && creator.reviewStats.totalReviews > 0 && (
-          <div className="flex items-center gap-1 mb-2">
-            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-            <span className="text-sm font-bold text-gray-900">
-              {creator.reviewStats.averageRating.toFixed(1)}
-            </span>
-            <span className="text-xs text-gray-500">
-              ({creator.reviewStats.totalReviews})
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-1 mb-2">
+          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+          <span className="text-sm font-bold text-gray-900">
+            {creator.reviewStats && creator.reviewStats.totalReviews > 0
+              ? creator.reviewStats.averageRating.toFixed(1)
+              : '0.0'}
+          </span>
+          <span className="text-xs text-gray-500">
+            ({creator.reviewStats?.totalReviews || 0})
+          </span>
+        </div>
 
         {/* 통계 */}
         <div className="flex items-center gap-4 text-xs text-gray-600 mb-3 bg-gray-50 px-3 py-2 rounded-lg w-full justify-center">
