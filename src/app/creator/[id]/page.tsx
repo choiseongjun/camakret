@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp } from 'lucide-react';
 import { StarRating } from '@/app/components/StarRating';
+import { apiFetch } from '@/lib/api';
 
 interface Creator {
   id: string;
@@ -72,8 +73,7 @@ export default function CreatorDetail() {
 
   const fetchCreatorDetail = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/creators/${creatorId}`);
+      const response = await apiFetch(`api/creators/${creatorId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -91,8 +91,7 @@ export default function CreatorDetail() {
     if (!newReview.rating || !newReview.content.trim()) return;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/reviews`, {
+      const response = await apiFetch('api/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

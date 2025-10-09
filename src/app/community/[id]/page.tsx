@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp, TrendingUp, Calendar } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { StarRating } from '@/app/components/StarRating';
+import { apiFetch } from '@/lib/api';
 
 interface Creator {
   id: string;
@@ -74,8 +75,7 @@ export default function CreatorCommunity() {
 
   const fetchCreatorDetail = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/creators/${creatorId}`);
+      const response = await apiFetch(`api/creators/${creatorId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -88,8 +88,7 @@ export default function CreatorCommunity() {
 
   const fetchCommunityPosts = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/community?creatorId=${creatorId}`);
+      const response = await apiFetch(`api/community?creatorId=${creatorId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -111,8 +110,7 @@ export default function CreatorCommunity() {
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/community`,
+      const response = await apiFetch('api/community',
         {
           method: 'POST',
           headers: {

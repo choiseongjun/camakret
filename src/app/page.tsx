@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CreatorCard from '@/components/CreatorCard';
+import { apiFetch } from '@/lib/api';
 
 interface Creator {
   id: string;
@@ -76,8 +77,7 @@ export default function Home() {
     setLoading(true);
     try {
       // 랜덤하게 정렬된 크리에이터 가져오기
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/creators?page=1&limit=50&sortBy=random`);
+      const response = await apiFetch('api/creators?page=1&limit=50&sortBy=random');
       const data = await response.json();
       if (data.success) {
         // 응답 데이터를 섞어서 무작위로 표시
@@ -98,8 +98,7 @@ export default function Home() {
     setLoadingMore(true);
     const nextPage = page + 1;
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/creators?page=${nextPage}&limit=${PAGE_SIZE}`);
+      const response = await apiFetch(`api/creators?page=${nextPage}&limit=${PAGE_SIZE}`);
       const data = await response.json();
       if (data.success) {
         setAllCreators(prev => [...prev, ...data.data]);

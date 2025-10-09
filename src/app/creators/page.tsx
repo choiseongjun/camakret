@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Search } from 'lucide-react';
 import CreatorCard from '@/components/CreatorCard';
+import { apiFetch } from '@/lib/api';
 
 // Debounce hook to prevent excessive API calls while typing
 function useDebounce(value: string, delay: number) {
@@ -72,7 +73,7 @@ export default function CreatorsListPage() {
         params.append('channelSize', channelSize);
       }
 
-      const response = await fetch(`/api/creators?${params}`);
+      const response = await apiFetch(`api/creators?${params}`);
       const data = await response.json();
       if (data.success) {
         setCreators(data.data);
