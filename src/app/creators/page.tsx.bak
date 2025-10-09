@@ -62,8 +62,8 @@ export default function CreatorsListPage() {
       const data = await response.json();
       if (data.success) {
         setCreators(data.data);
-        setTotalCreators(data.pagination?.totalItems || 0);
-        setTotalPages(data.pagination?.totalPages || 0);
+        setTotalCreators(data.total);
+        setTotalPages(Math.ceil(data.total / PAGE_SIZE));
       }
     } catch (error) {
       console.error('크리에이터 데이터 로드 실패:', error);
@@ -137,19 +137,17 @@ export default function CreatorsListPage() {
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/" className="text-sm text-gray-600 hover:text-gray-900"> ← 홈으로</Link>
-              {!authLoading && (
-                user ? (
-                  <>
-                    <span className="text-gray-800 text-sm font-medium">{user.name}님</span>
-                    <button onClick={logout} className="text-sm text-gray-600 hover:text-gray-900">
-                      로그아웃
-                    </button>
-                  </>
-                ) : (
-                  <button onClick={login} className="text-sm font-medium text-orange-600 hover:text-orange-500">
-                    로그인
+              {!authLoading && (user ? (
+                <>
+                  <span className="text-gray-800 text-sm font-medium">{user.name}님</span>
+                  <button onClick={logout} className="text-sm text-gray-600 hover:text-gray-900">
+                    로그아웃
                   </button>
-                )
+                </>
+              ) : (
+                <button onClick={login} className="text-sm font-medium text-orange-600 hover:text-orange-500">
+                  로그인
+                </button>
               )}
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { StarRating } from "@/app/components/StarRating";
 
 export default function Membership() {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
@@ -390,9 +391,7 @@ export default function Membership() {
                     <div className="text-sm text-gray-600">{review.months}개월 구독 중</div>
                   </div>
                 </div>
-                <div className="flex text-yellow-500 mb-2">
-                  {"★".repeat(review.rating)}
-                </div>
+                <StarRating rating={review.rating} className="mb-2" />
                 <p className="text-gray-700">{review.comment}</p>
               </div>
             ))}

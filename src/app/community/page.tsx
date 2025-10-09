@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -7,20 +7,16 @@ type PostType = "all" | "discussion" | "recommendation" | "review" | "poll" | "s
 
 interface Post {
   id: string;
-  type: string;
+  category: string;
   title?: string;
   content: string;
-  authorId: string;
-  authorName: string;
-  authorBadge?: string | null;
-  creatorId?: string | null;
+  author_id: string;
+  author_name: string;
+  creator_id?: string | null;
   tags: string[];
   images: string[];
-  createdAt: string;
+  created_at: string;
   likes: number;
-  likedBy: string[];
-  comments: any[];
-  isPinned: boolean;
 }
 
 export default function Community() {
@@ -85,14 +81,16 @@ export default function Community() {
 
   const handleLike = async (postId: string) => {
     try {
-      const response = await fetch(`/api/community/${postId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'like',
-          userId: currentUserId,
-        }),
-      });
+      const response = await fetch(`/api/community/${postId}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'like',
+            userId: currentUserId,
+          }),
+        }
+      );
 
       if (response.ok) {
         fetchPosts();
@@ -102,73 +100,8 @@ export default function Community() {
     }
   };
 
-  const samplePosts = [
-    {
-      id: 1,
-      author: "먹방러버",
-      authorBadge: "🔥 인기 멤버",
-      tier: "discussion",
-      timestamp: "10분 전",
-      content: "요즘 핫한 먹방 크리에이터 추천해주세요! 🍜\n\nASMR 스타일 좋아하는데 새로운 채널 발견하고 싶어요. 여러분이 요즘 보고 있는 크리에이터는 누구인가요?\n\n특히 중식이나 한식 전문 채널이면 더 좋을 것 같아요!",
-      image: null,
-      likes: 45,
-      comments: 23,
-      isPinned: true
-    },
-    {
-      id: 2,
-      author: "푸드헌터",
-      authorBadge: "⭐ 리뷰왕",
-      tier: "recommendation",
-      timestamp: "1시간 전",
-      content: "Jane ASMR 제인님 완전 강추합니다! ✨\n\n구독자 1800만 명이 괜히 있는 게 아니에요. ASMR 사운드 퀄리티가 정말 좋고, 음식 선택도 다양해서 질리지 않아요.\n\n입문자분들에게도 추천드립니다!",
-      image: null,
-      likes: 89,
-      comments: 34,
-      isPinned: false
-    },
-    {
-      id: 3,
-      author: "먹스타그램",
-      authorBadge: "🍕 음식 탐험가",
-      tier: "review",
-      timestamp: "2시간 전",
-      content: "Hongyu ASMR 홍유님 리뷰 남겨요! ⭐⭐⭐⭐⭐\n\nASMR 퀄리티가 정말 좋아요. 특히 치킨 먹방이 레전드입니다. 바삭한 소리 듣고 있으면 힐링되는 느낌?\n\n구독자 1600만 명의 위엄을 느낄 수 있어요 👍",
-      image: "https://via.placeholder.com/400x300",
-      likes: 124,
-      comments: 45,
-      isPinned: false,
-      verified: true
-    },
-    {
-      id: 4,
-      author: "야식러",
-      authorBadge: "🌙 심야 먹방러",
-      tier: "discussion",
-      timestamp: "5시간 전",
-      content: "밤에 보기 좋은 먹방 추천해주세요! 🌃\n\n야식 땡길 때 보면 좋은 채널 있나요? 소리가 좋고 분위기 있는 채널 선호합니다.\n\nASMR이면 더 좋구요!",
-      image: null,
-      likes: 67,
-      comments: 56,
-      isPinned: false
-    },
-    {
-      id: 5,
-      author: "맛집탐방",
-      authorBadge: null,
-      tier: "recommendation",
-      timestamp: "어제",
-      content: "요리 배우고 싶으면 이 채널들 보세요! 👨‍🍳\n\n먹방만 보다가 요리도 배우고 싶어서 찾아봤는데, 요리 과정 보여주는 크리에이터들도 많더라구요.\n\n따라하기 쉽고 설명도 친절해서 초보자에게 딱이에요!",
-      image: null,
-      likes: 156,
-      comments: 78,
-      isPinned: false
-    }
-  ];
-
-  const displayPosts = posts.length > 0 ? posts : samplePosts;
-  const filteredPosts = displayPosts.filter((post: any) =>
-    activeFilter === "all" || post.type === activeFilter || post.tier === activeFilter
+  const filteredPosts = posts.filter((post: any) =>
+    activeFilter === "all" || post.category === activeFilter
   );
 
   return (
@@ -285,39 +218,22 @@ export default function Community() {
         {/* Posts */}
         <div className="space-y-4">
           {filteredPosts.map((post) => (
-            <div key={post.id} className={`bg-white rounded-2xl border-2 ${
-              post.isPinned ? "border-orange-400" : "border-gray-200"
-            } overflow-hidden hover:shadow-lg transition`}>
+            <div key={post.id} className={`bg-white rounded-2xl border-2 border-gray-200 overflow-hidden hover:shadow-lg transition`}>
 
               <div className="p-6">
                 {/* Author Info */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold">
-                      {(post.authorName || post.author || '익명')[0]}
+                      {(post.author_name || '익명')[0]}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900">{post.authorName || post.author || '익명'}</span>
-                        {post.authorBadge && (
-                          <span className="text-xs px-2 py-1 bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 rounded-full font-semibold">
-                            {post.authorBadge}
-                          </span>
-                        )}
-                        {post.verified && (
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-                            ✓ 인증
-                          </span>
-                        )}
+                        <span className="font-bold text-gray-900">{post.author_name || '익명'}</span>
                       </div>
-                      <div className="text-sm text-gray-500">{post.timestamp}</div>
+                      <div className="text-sm text-gray-500">{new Date(post.created_at).toLocaleDateString()}</div>
                     </div>
                   </div>
-                  {post.isPinned && (
-                    <span className="px-3 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-semibold">
-                      📌 인기
-                    </span>
-                  )}
                 </div>
 
                 {/* Content */}
@@ -325,21 +241,11 @@ export default function Community() {
                   {post.content}
                 </p>
 
-                {/* Image */}
-                {post.image && (
-                  <div className="mb-4 rounded-xl overflow-hidden">
-                    <img src={post.image} alt="" className="w-full" />
-                  </div>
-                )}
-
                 {/* Actions */}
                 <div className="flex items-center gap-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleLike(post.id)}
-                    className={`flex items-center gap-2 transition ${
-                      post.likedBy?.includes(currentUserId)
-                        ? 'text-red-500'
-                        : 'text-gray-600 hover:text-orange-600'
+                    className={`flex items-center gap-2 transition text-gray-600 hover:text-orange-600'
                     }`}
                   >
                     <span className="text-xl">❤️</span>
@@ -347,7 +253,7 @@ export default function Community() {
                   </button>
                   <button className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition">
                     <span className="text-xl">💬</span>
-                    <span className="font-semibold">{post.comments?.length || post.comments || 0}</span>
+                    <span className="font-semibold">댓글</span>
                   </button>
                   <button className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition">
                     <span className="text-xl">🔗</span>

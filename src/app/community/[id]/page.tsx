@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp, TrendingUp, Calendar } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { StarRating } from '@/app/components/StarRating';
 
 interface Creator {
   id: string;
@@ -30,32 +32,33 @@ interface Creator {
 }
 
 interface Post {
-  id: string;
-  type: 'discussion' | 'review' | 'recommendation' | 'poll' | 'suggestion';
+  id: number;
+  creator_id: string;
+  user_id: number;
+  category: string;
   title?: string;
   content: string;
-  authorId: string;
-  authorName: string;
-  authorBadge?: string;
+  images: string[];
   tags: string[];
-  createdAt: string;
+  created_at: string;
+  updated_at: string;
   likes: number;
-  likedBy: string[];
-  comments: any[];
-  isPinned: boolean;
+  liked_by: number[];
+  author_name: string;
 }
 
 export default function CreatorCommunity() {
   const params = useParams();
   const creatorId = params.id as string;
-  
+  const { user, getAccessToken } = useAuth();
+
   const [creator, setCreator] = useState<Creator | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews' | 'polls'>('posts');
   const [showPostForm, setShowPostForm] = useState(false);
   const [newPost, setNewPost] = useState({
-    type: 'discussion' as const,
+    category: 'discussion' as 'discussion' | 'review' | 'recommendation' | 'poll' | 'suggestion',
     title: '',
     content: '',
     tags: [] as string[],
@@ -99,43 +102,34 @@ export default function CreatorCommunity() {
   const handleSubmitPost = async () => {
     if (!newPost.content.trim()) return;
 
-    try {
-      const response = await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newPost,
-          authorId: 'user-' + Date.now(),
-          authorName: '익명 사용자',
-          creatorId: creatorId,
-        }),
-      });
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
 
-      if (response.ok) {
+    try {
+      const response = await fetch(`/api/community`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...newPost, creatorId, authorId: user.id }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
         setShowPostForm(false);
-        setNewPost({ type: 'discussion', title: '', content: '', tags: [] });
+        setNewPost({ category: 'discussion', title: '', content: '', tags: [] });
         fetchCommunityPosts();
+      } else {
+        alert(data.message || '게시글 작성에 실패했습니다.');
       }
     } catch (error) {
       console.error('게시글 작성 실패:', error);
+      alert('게시글 작성 중 오류가 발생했습니다.');
     }
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
-      />
-    ));
   };
 
   const getTypeIcon = (type: string) => {
@@ -158,6 +152,12 @@ export default function CreatorCommunity() {
       case 'suggestion': return '제안';
       default: return '토론';
     }
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
   };
 
   if (loading) {
@@ -240,7 +240,7 @@ export default function CreatorCommunity() {
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    {renderStars(creator.reviewStats.averageRating)}
+                    <StarRating rating={creator.reviewStats.averageRating} />
                   </div>
                   <div className="text-sm text-gray-600">{creator.reviewStats.averageRating.toFixed(1)} ({creator.reviewStats.totalReviews} 리뷰)</div>
                 </div>
@@ -338,49 +338,49 @@ export default function CreatorCommunity() {
               </div>
             ) : (
               posts.map((post) => (
-                <div key={post.id} className={`bg-white rounded-2xl border-2 ${
-                  post.isPinned ? "border-orange-400" : "border-gray-200"
-                } overflow-hidden hover:shadow-lg transition`}>
+                <div key={post.id} className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden hover:shadow-lg transition">
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold">
-                          {post.authorName[0]}
+                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                          {post.author_image ? (
+                            <img
+                              src={post.author_image}
+                              alt={post.author_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold">
+                              {post.author_name?.charAt(0) || 'U'}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-900">{post.authorName}</span>
+                            <span className="font-bold text-gray-900">{post.author_name || '익명'}</span>
                             <span className="text-sm px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                              {getTypeIcon(post.type)} {getTypeLabel(post.type)}
+                              {getTypeIcon(post.category)} {getTypeLabel(post.category)}
                             </span>
-                            {post.authorBadge && (
-                              <span className="text-xs px-2 py-1 bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 rounded-full font-semibold">
-                                {post.authorBadge}
-                              </span>
-                            )}
                           </div>
-                          <div className="text-sm text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
                       </div>
-                      {post.isPinned && (
-                        <span className="px-3 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-semibold">
-                          📌 인기
-                        </span>
-                      )}
                     </div>
 
                     {post.title && (
-                      <h3 className="font-semibold text-gray-900 mb-2">{post.title}</h3>
+                      <h3 className="font-semibold text-gray-900 mb-2 text-lg">{post.title}</h3>
                     )}
-                    
-                    <p className="text-gray-900 whitespace-pre-line mb-4 leading-relaxed">
+
+                    <p className="text-gray-900 whitespace-pre-wrap mb-4 leading-relaxed">
                       {post.content}
                     </p>
 
-                    {post.tags.length > 0 && (
+                    {post.tags && post.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-4">
-                        {post.tags.map((tag) => (
-                          <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                        {post.tags.map((tag, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
                             #{tag}
                           </span>
                         ))}
@@ -394,11 +394,7 @@ export default function CreatorCommunity() {
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition">
                         <MessageCircle className="w-4 h-4" />
-                        <span className="font-semibold">{post.comments?.length || 0}</span>
-                      </button>
-                      <button className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition">
-                        <ExternalLink className="w-4 h-4" />
-                        <span className="font-semibold">공유</span>
+                        <span className="font-semibold">댓글</span>
                       </button>
                     </div>
                   </div>
@@ -452,9 +448,9 @@ export default function CreatorCommunity() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setNewPost({ ...newPost, type: 'discussion' })}
+                    onClick={() => setNewPost({ ...newPost, category: 'discussion' })}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                      newPost.type === 'discussion'
+                      newPost.category === 'discussion'
                         ? 'bg-orange-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
@@ -462,9 +458,9 @@ export default function CreatorCommunity() {
                     💬 토론
                   </button>
                   <button
-                    onClick={() => setNewPost({ ...newPost, type: 'review' })}
+                    onClick={() => setNewPost({ ...newPost, category: 'review' })}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                      newPost.type === 'review'
+                      newPost.category === 'review'
                         ? 'bg-orange-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
@@ -472,14 +468,24 @@ export default function CreatorCommunity() {
                     ⭐ 리뷰
                   </button>
                   <button
-                    onClick={() => setNewPost({ ...newPost, type: 'recommendation' })}
+                    onClick={() => setNewPost({ ...newPost, category: 'recommendation' })}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                      newPost.type === 'recommendation'
+                      newPost.category === 'recommendation'
                         ? 'bg-orange-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     👍 추천
+                  </button>
+                  <button
+                    onClick={() => setNewPost({ ...newPost, category: 'suggestion' })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      newPost.category === 'suggestion'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    💡 제안
                   </button>
                 </div>
               </div>
@@ -502,11 +508,35 @@ export default function CreatorCommunity() {
                   onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   rows={6}
-                  placeholder="내용을 입력하세요"
+                  placeholder="크리에이터와 소통할 내용을 작성하세요..."
                   maxLength={1000}
                 />
                 <div className="text-right text-sm text-gray-500 mt-1">
                   {newPost.content.length}/1000
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">태그 (선택)</label>
+                <div className="flex flex-wrap gap-2">
+                  {['재미있어요', '힐링돼요', '먹고싶어져요', 'ASMR좋아요', '요리배우고싶어요', '다양한음식'].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        const tags = newPost.tags.includes(tag)
+                          ? newPost.tags.filter(t => t !== tag)
+                          : [...newPost.tags, tag];
+                        setNewPost({ ...newPost, tags });
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        newPost.tags.includes(tag)
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -520,7 +550,10 @@ export default function CreatorCommunity() {
                 게시글 작성
               </button>
               <button
-                onClick={() => setShowPostForm(false)}
+                onClick={() => {
+                  setShowPostForm(false);
+                  setNewPost({ category: 'discussion', title: '', content: '', tags: [] });
+                }}
                 className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
               >
                 취소
@@ -532,3 +565,4 @@ export default function CreatorCommunity() {
     </div>
   );
 }
+

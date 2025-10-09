@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp } from 'lucide-react';
+import { StarRating } from '@/app/components/StarRating';
 
 interface Creator {
   id: string;
@@ -51,7 +52,7 @@ interface Review {
 export default function CreatorDetail() {
   const params = useParams();
   const creatorId = params.id as string;
-  
+
   const [creator, setCreator] = useState<Creator | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,23 +116,6 @@ export default function CreatorDetail() {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
-  };
-
-  const renderStars = (rating: number, size: 'sm' | 'md' | 'lg' = 'md') => {
-    const sizeClass = {
-      sm: 'w-3 h-3',
-      md: 'w-4 h-4',
-      lg: 'w-5 h-5'
-    };
-    
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`${sizeClass[size]} ${
-          i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-        }`}
-      />
-    ));
   };
 
   const tagOptions = ['재미있어요', '힐링돼요', '먹고싶어져요', 'ASMR좋아요', '요리배우고싶어요', '다양한음식'];
@@ -215,7 +199,7 @@ export default function CreatorDetail() {
 
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-1">
-                  {renderStars(creator.reviewStats.averageRating, 'lg')}
+                  <StarRating rating={creator.reviewStats.averageRating} size="lg" />
                   <span className="text-lg font-semibold text-gray-900 ml-2">
                     {creator.reviewStats.averageRating.toFixed(1)}
                   </span>
@@ -333,13 +317,13 @@ export default function CreatorDetail() {
                 <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {review.userId.charAt(review.userId.length - 1)}
+                      {String(review.userId).charAt(String(review.userId).length - 1)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="font-medium text-gray-900">익명 사용자</span>
                         <div className="flex items-center gap-1">
-                          {renderStars(review.rating, 'sm')}
+                          <StarRating rating={review.rating} size="sm" />
                         </div>
                         <span className="text-sm text-gray-500">
                           {new Date(review.createdAt).toLocaleDateString()}
@@ -391,13 +375,9 @@ export default function CreatorDetail() {
                     <button
                       key={rating}
                       onClick={() => setNewReview({ ...newReview, rating })}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        rating <= newReview.rating
-                          ? 'border-yellow-400 bg-yellow-400'
-                          : 'border-gray-300'
-                      }`}
+                      className="focus:outline-none"
                     >
-                      ⭐
+                      <Star className={`w-8 h-8 ${rating <= newReview.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
                     </button>
                   ))}
                 </div>

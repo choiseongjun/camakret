@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock } from 'lucide-react';
 
 // Google 로고 SVG 컴포넌트
@@ -22,11 +23,14 @@ const KakaoIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function LoginPage() {
+  const { login } = useAuth();
 
   const handleSocialLogin = (provider: 'google' | 'kakao') => {
-    // 실제 프로덕션에서는 next-auth의 signIn 함수를 사용합니다.
-    // 예: import { signIn } from 'next-auth/react'; signIn(provider);
-    alert(`'${provider}' (으)로 로그인을 시도합니다. (UI 테스트용)`);
+    if (provider === 'google') {
+      login();
+    } else {
+      alert('카카오 로그인은 아직 지원하지 않습니다.');
+    }
   };
 
   const handleEmailLogin = (e: React.FormEvent) => {
@@ -72,21 +76,22 @@ export default function LoginPage() {
               <GoogleIcon />
               <span className="font-medium text-gray-700">Google 계정으로 로그인</span>
             </button>
-            <button onClick={() => handleSocialLogin('kakao')} className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#FEE500] rounded-lg hover:bg-[#FDD835] transition-colors">
+            {/* 카카오 로그인 - 추후 구현 */}
+            {/* <button onClick={() => handleSocialLogin('kakao')} className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#FEE500] rounded-lg hover:bg-[#FDD835] transition-colors">
               <KakaoIcon />
               <span className="font-medium text-[#391B1B]">카카오 계정으로 로그인</span>
-            </button>
+            </button> */}
           </div>
 
-          {/* 구분선 */}
-          <div className="flex items-center my-8">
+          {/* 구분선 - 이메일 로그인 비활성화 시 주석 */}
+          {/* <div className="flex items-center my-8">
             <hr className="flex-grow border-t border-gray-300" />
             <span className="mx-4 text-sm font-medium text-gray-500">또는</span>
             <hr className="flex-grow border-t border-gray-300" />
-          </div>
+          </div> */}
 
-          {/* 이메일 로그인 폼 */}
-          <form onSubmit={handleEmailLogin} className="space-y-6">
+          {/* 이메일 로그인 폼 - 추후 구현 */}
+          {/* <form onSubmit={handleEmailLogin} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">이메일 주소</label>
               <div className="relative">
@@ -113,11 +118,12 @@ export default function LoginPage() {
                 로그인
               </button>
             </div>
-          </form>
+          </form> */}
 
-          <p className="text-center text-sm text-gray-600 mt-8">
+          {/* 회원가입 링크 - 추후 구현 */}
+          {/* <p className="text-center text-sm text-gray-600 mt-8">
             아직 계정이 없으신가요? <Link href="/signup" className="font-medium text-orange-600 hover:text-orange-500">회원가입</Link>
-          </p>
+          </p> */}
         </div>
       </main>
     </div>
