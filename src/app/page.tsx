@@ -61,12 +61,12 @@ export default function Home() {
     }
     if (selectedStyle) {
       filtered = filtered.filter(creator =>
-        creator.foodCategories.style.includes(selectedStyle)
+        creator?.foodCategories?.style?.includes(selectedStyle)
       );
     }
     if (selectedSize) {
       filtered = filtered.filter(creator =>
-        creator.foodCategories.channelSize === selectedSize
+        creator?.foodCategories?.channelSize === selectedSize
       );
     }
     setFilteredCreators(filtered);

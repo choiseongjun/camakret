@@ -45,6 +45,7 @@ interface Post {
   likes: number;
   liked_by: number[];
   author_name: string;
+  author_image?: string;
 }
 
 export default function CreatorCommunity() {
