@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp, MapPin } from 'lucide-react';
 import { StarRating } from '@/app/components/StarRating';
 import { apiFetch } from '@/lib/api';
 import ShareButton from '@/components/ShareButton';
+import VenueRecommendForm from '@/components/VenueRecommendForm';
 
 interface Creator {
   id: string;
@@ -63,6 +64,7 @@ export default function CreatorDetail() {
   const [similarCreators, setSimilarCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showVenueForm, setShowVenueForm] = useState(false);
   const [newReview, setNewReview] = useState({
     rating: 5,
     title: '',
@@ -161,28 +163,17 @@ export default function CreatorDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push(returnUrl)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-pointer"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              뒤로가기
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">🍜</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">CreatorHub</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 뒤로가기 버튼 */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push(returnUrl)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-pointer transition"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            뒤로가기
+          </button>
+        </div>
         {/* Creator Info */}
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
           <div className="flex flex-col lg:flex-row gap-8">
@@ -252,6 +243,13 @@ export default function CreatorDetail() {
                   <ExternalLink className="w-4 h-4" />
                   YouTube 채널
                 </a>
+                <Link
+                  href={`/creator/${creator.id}/recommend`}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium hover:shadow-lg transition"
+                >
+                  <MapPin className="w-4 h-4" />
+                  콘텐츠 추천
+                </Link>
                 <Link
                   href={`/community/${creator.id}`}
                   className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-full font-medium hover:shadow-lg transition"
@@ -440,6 +438,15 @@ export default function CreatorDetail() {
           </div>
         )}
       </div>
+
+      {/* Venue Recommend Form */}
+      {showVenueForm && (
+        <VenueRecommendForm
+          creatorId={creatorId}
+          creatorName={creator?.name || ''}
+          onSuccess={() => setShowVenueForm(false)}
+        />
+      )}
 
       {/* Review Form Modal */}
       {showReviewForm && (
