@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
@@ -26,6 +26,23 @@ export default function Footer() {
               <li><Link href="/community" className="hover:text-white transition">커뮤니티</Link></li>
               <li><Link href="/reviews" className="hover:text-white transition">리뷰</Link></li>
             </ul>
+          </div>
+
+          <div>
+            <h3 className="text-white font-semibold mb-4">협업 문의</h3>
+            <div className="text-sm">
+              <p className="mb-2">크리에이터 협업 및 제휴 문의</p>
+              <a
+                href="mailto:creatorhub987@gmail.com"
+                className="text-orange-400 hover:text-orange-300 transition flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                creatorhub987@gmail.com
+              </a>
+            </div>
           </div>
         </div>
 

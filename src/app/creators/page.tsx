@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,7 +50,7 @@ interface Creator {
 
 const PAGE_SIZE = 12;
 
-export default function CreatorsListPage() {
+function CreatorsListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading, login, logout } = useAuth();
@@ -399,5 +399,33 @@ export default function CreatorsListPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function CreatorsListPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">전체 크리에이터</h1>
+            <p className="text-lg text-gray-600">로딩 중...</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl p-6 shadow-lg animate-pulse">
+                <div className="w-20 h-20 bg-gray-300 rounded-full mx-auto mb-4"></div>
+                <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
+                <div className="h-3 bg-gray-300 rounded w-1/2 mx-auto mb-4"></div>
+                <div className="h-3 bg-gray-300 rounded w-full"></div>
+                <div className="h-3 bg-gray-300 rounded w-full mt-1"></div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    }>
+      <CreatorsListContent />
+    </Suspense>
   );
 }
