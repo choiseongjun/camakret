@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, Users, Eye, Video, Heart, MessageCircle, ExternalLink, ThumbsUp } from 'lucide-react';
 import { StarRating } from '@/app/components/StarRating';
@@ -53,7 +53,10 @@ interface Review {
 
 export default function CreatorDetail() {
   const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const creatorId = params.id as string;
+  const returnUrl = searchParams.get('returnUrl') || '/creators';
 
   const [creator, setCreator] = useState<Creator | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -162,10 +165,13 @@ export default function CreatorDetail() {
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+            <button
+              onClick={() => router.push(returnUrl)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-pointer"
+            >
               <ArrowLeft className="w-5 h-5" />
               뒤로가기
-            </Link>
+            </button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">🍜</span>
@@ -217,15 +223,6 @@ export default function CreatorDetail() {
                   </span>
                   <span className="text-gray-600">({creator.reviewStats.totalReviews} 리뷰)</span>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  creator.foodCategories.channelSize === '대형' 
-                    ? 'bg-red-100 text-red-800'
-                    : creator.foodCategories.channelSize === '중형'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-green-100 text-green-800'
-                }`}>
-                  {creator.foodCategories.channelSize} 채널
-                </span>
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">

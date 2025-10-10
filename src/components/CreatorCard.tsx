@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Users, Eye, Star } from 'lucide-react';
 
 interface Creator {
@@ -41,12 +42,16 @@ const formatNumber = (num: number) => {
 };
 
 export default function CreatorCard({ creator }: CreatorCardProps) {
+  const searchParams = useSearchParams();
   const [isKeywordsExpanded, setIsKeywordsExpanded] = useState(false);
 
   const displayKeywords = isKeywordsExpanded
     ? creator.keywords
     : creator.keywords?.slice(0, 3);
   const hasMoreKeywords = (creator.keywords?.length || 0) > 3;
+
+  // 현재 URL 파라미터를 유지한 링크 생성
+  const detailLink = `/creator/${creator.id}?returnUrl=${encodeURIComponent(`/creators?${searchParams.toString()}`)}`;
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
@@ -59,15 +64,6 @@ export default function CreatorCard({ creator }: CreatorCardProps) {
             className="w-20 h-20 rounded-full object-cover border-4 border-orange-100"
             onError={(e) => { e.currentTarget.src = '/default-avatar.png'; }}
           />
-          <span className={`absolute -top-1 -right-1 px-2 py-0.5 rounded-full text-xs font-bold ${
-            creator.foodCategories.channelSize === '대형'
-              ? 'bg-red-500 text-white'
-              : creator.foodCategories.channelSize === '중형'
-              ? 'bg-yellow-500 text-white'
-              : 'bg-green-500 text-white'
-          }`}>
-            {creator.foodCategories.channelSize}
-          </span>
         </div>
 
         {/* 이름 */}
@@ -149,7 +145,7 @@ export default function CreatorCard({ creator }: CreatorCardProps) {
 
       {/* 상세보기 버튼 - 하단 고정 */}
       <Link
-        href={`/creator/${creator.id}`}
+        href={detailLink}
         className="w-full mt-auto px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl text-center text-sm font-semibold hover:shadow-lg hover:from-orange-600 hover:to-red-700 transition-all"
       >
         상세보기

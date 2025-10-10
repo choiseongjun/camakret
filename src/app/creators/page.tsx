@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Search, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import CreatorCard from '@/components/CreatorCard';
@@ -50,14 +51,18 @@ interface Creator {
 const PAGE_SIZE = 12;
 
 export default function CreatorsListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading, login, logout } = useAuth();
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCreators, setTotalCreators] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [channelSizeFilter, setChannelSizeFilter] = useState<string>('');
+
+  // URL에서 초기값 가져오기
+  const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [channelSizeFilter, setChannelSizeFilter] = useState<string>(searchParams.get('size') || '');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   // 맞춤 추천 필터 상태
@@ -132,15 +137,37 @@ export default function CreatorsListPage() {
     }
   }, [showRecommendationFilters, channelSizePrefs, stylePrefs, foodTypePrefs, minRating, activeOnly, user]);
 
-  useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
+  // URL 파라미터 업데이트 함수
+  const updateURL = useCallback((page: number, search: string, size: string) => {
+    const params = new URLSearchParams();
+    if (page > 1) params.set('page', page.toString());
+    if (search) params.set('search', search);
+    if (size) params.set('size', size);
+
+    const queryString = params.toString();
+    const newUrl = `/creators${queryString ? `?${queryString}` : ''}`;
+
+    // 현재 URL과 다를 때만 업데이트
+    if (window.location.pathname + window.location.search !== newUrl) {
+      router.replace(newUrl, { scroll: false });
     }
+  }, [router]);
+
+  // 검색어나 필터가 변경되면 페이지를 1로 리셋 (초기 로드 제외)
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+    setCurrentPage(1);
   }, [debouncedSearchTerm, channelSizeFilter, showRecommendationFilters]);
 
   useEffect(() => {
     fetchCreators(currentPage, debouncedSearchTerm, channelSizeFilter, showRecommendationFilters);
-  }, [currentPage, debouncedSearchTerm, channelSizeFilter, showRecommendationFilters, fetchCreators]);
+    updateURL(currentPage, debouncedSearchTerm, channelSizeFilter);
+  }, [currentPage, debouncedSearchTerm, channelSizeFilter, showRecommendationFilters]);
 
   const toggleArrayItem = (arr: string[], setArr: (arr: string[]) => void, value: string) => {
     if (arr.includes(value)) {
@@ -339,45 +366,6 @@ export default function CreatorsListPage() {
               </div>
             )}
 
-            {/* 기존 필터 (맞춤 추천 모드가 아닐 때만 표시) */}
-            {!showRecommendationFilters && (
-              <>
-                <div className="flex justify-center gap-3">
-                  <button
-                    onClick={() => setChannelSizeFilter('')}
-                    className={`px-6 py-2 rounded-full font-medium transition ${
-                      channelSizeFilter === '' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-                    }`}
-                  >
-                    전체
-                  </button>
-                  <button
-                    onClick={() => setChannelSizeFilter('대형')}
-                    className={`px-6 py-2 rounded-full font-medium transition ${
-                      channelSizeFilter === '대형' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-                    }`}
-                  >
-                    대형
-                  </button>
-                  <button
-                    onClick={() => setChannelSizeFilter('중형')}
-                    className={`px-6 py-2 rounded-full font-medium transition ${
-                      channelSizeFilter === '중형' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-                    }`}
-                  >
-                    중형
-                  </button>
-                  <button
-                    onClick={() => setChannelSizeFilter('소형')}
-                    className={`px-6 py-2 rounded-full font-medium transition ${
-                      channelSizeFilter === '소형' ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300'
-                    }`}
-                  >
-                    소형
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
 
