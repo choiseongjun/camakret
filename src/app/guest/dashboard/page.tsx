@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Calendar, MapPin, DollarSign, Mail, Phone, CheckCircle, XCircle, Clock, Eye, Filter } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
-// 임시 제안 데이터
+// 임시 제안 데이터 (API 실패시 fallback)
 const mockProposals = [
   {
     id: '1',
@@ -75,18 +78,181 @@ const statusConfig = {
 };
 
 export default function GuestDashboardPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  useEffect(() => {
+    // authLoading이 끝날 때까지 기다림
+    if (authLoading) return;
+
+    // 로딩 끝났는데 user가 없으면 로그인 페이지로
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    fetchProposals();
+  }, [user, authLoading]);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return dateString;
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      // 시간이 00:00이면 날짜만 표시
+      if (hours === '00' && minutes === '00') {
+        return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
+      }
+
+      return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일 ${hours}:${minutes}`;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const fetchProposals = async () => {
+    try {
+      setLoading(true);
+      const response = await apiFetch(`/api/guests/me/proposals?userId=${user?.id}`);
+      const result = await response.json();
+
+      if (result.success) {
+        // Transform data for UI compatibility
+        const transformedData = (result.data || []).map((proposal: any) => ({
+          ...proposal,
+          guestName: proposal.guest_name || proposal.guestName,
+          guestTitle: proposal.guest_title || proposal.guestTitle,
+          guestCategory: proposal.guest_category || proposal.guestCategory,
+          creatorName: proposal.creator_name || proposal.creatorName,
+          creatorEmail: proposal.creator_email || proposal.creatorEmail,
+          creatorPhone: proposal.creator_phone || proposal.creatorPhone,
+          creatorChannel: proposal.creator_channel || proposal.creatorChannel,
+          subscribers: proposal.creator_subscribers || proposal.subscribers,
+          contentIdea: proposal.content_idea || proposal.contentIdea,
+          shootingDate: formatDate(proposal.shooting_date || proposal.shootingDate),
+          createdAt: formatDate(proposal.created_at || proposal.createdAt)
+        }));
+        setProposals(transformedData);
+      } else {
+        console.error('Failed to fetch proposals:', result.message);
+        setProposals(mockProposals); // Fallback to mock data
+      }
+    } catch (error) {
+      console.error('Error fetching proposals:', error);
+      setProposals(mockProposals); // Fallback to mock data
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openAcceptModal = (proposalId: string) => {
+    setSelectedProposalId(proposalId);
+    setShowAcceptModal(true);
+  };
+
+  const closeAcceptModal = () => {
+    setShowAcceptModal(false);
+    setSelectedProposalId(null);
+  };
+
+  const handleAccept = async () => {
+    if (!selectedProposalId) return;
+
+    try {
+      const response = await apiFetch(`/api/guests/proposals/${selectedProposalId}/accept`, {
+        method: 'POST'
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        alert('제안을 수락했습니다!\n크리에이터의 연락처가 공개되었습니다.');
+        closeAcceptModal();
+        // Refresh proposals
+        await fetchProposals();
+      } else {
+        alert('제안 수락에 실패했습니다: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error accepting proposal:', error);
+      alert('제안 수락 중 오류가 발생했습니다.');
+    }
+  };
+
+  const openRejectModal = (proposalId: string) => {
+    setSelectedProposalId(proposalId);
+    setRejectReason('');
+    setShowRejectModal(true);
+  };
+
+  const closeRejectModal = () => {
+    setShowRejectModal(false);
+    setSelectedProposalId(null);
+    setRejectReason('');
+  };
+
+  const handleReject = async () => {
+    if (!selectedProposalId) return;
+
+    try {
+      const response = await apiFetch(`/api/guests/proposals/${selectedProposalId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rejectReason: rejectReason })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        alert('제안을 거절했습니다.');
+        closeRejectModal();
+        // Refresh proposals
+        await fetchProposals();
+      } else {
+        alert('제안 거절에 실패했습니다: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error rejecting proposal:', error);
+      alert('제안 거절 중 오류가 발생했습니다.');
+    }
+  };
 
   const filteredProposals = filterStatus === 'all'
-    ? mockProposals
-    : mockProposals.filter(p => p.status === filterStatus);
+    ? proposals
+    : proposals.filter(p => p.status === filterStatus);
 
   const stats = {
-    total: mockProposals.length,
-    pending: mockProposals.filter(p => p.status === 'pending').length,
-    accepted: mockProposals.filter(p => p.status === 'accepted').length,
-    rejected: mockProposals.filter(p => p.status === 'rejected').length
+    total: proposals.length,
+    pending: proposals.filter(p => p.status === 'pending').length,
+    accepted: proposals.filter(p => p.status === 'accepted').length,
+    rejected: proposals.filter(p => p.status === 'rejected').length
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <p className="text-xl text-gray-500">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
@@ -179,7 +345,8 @@ export default function GuestDashboardPage() {
         {/* Proposals List */}
         <div className="space-y-4">
           {filteredProposals.map((proposal) => {
-            const StatusIcon = statusConfig[proposal.status as keyof typeof statusConfig].icon;
+            const status = proposal.status || 'pending';
+            const StatusIcon = statusConfig[status as keyof typeof statusConfig]?.icon || Clock;
 
             return (
               <div
@@ -188,11 +355,25 @@ export default function GuestDashboardPage() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
+                    {proposal.guestName && (
+                      <div className="mb-3">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 text-blue-800 rounded-full text-sm font-bold">
+                          <span className="text-lg">👤</span>
+                          <span>{proposal.guestName}</span>
+                          {proposal.guestTitle && <span className="text-blue-700">· {proposal.guestTitle}</span>}
+                          {proposal.guestCategory && (
+                            <span className="ml-1 px-2 py-0.5 bg-blue-200 text-blue-900 rounded-full text-xs">
+                              {proposal.guestCategory}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-2xl font-bold text-gray-900">{proposal.creatorName}</h3>
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${statusConfig[proposal.status as keyof typeof statusConfig].color}`}>
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${statusConfig[status as keyof typeof statusConfig]?.color || 'bg-gray-100 text-gray-700'}`}>
                         <StatusIcon className="w-4 h-4" />
-                        {statusConfig[proposal.status as keyof typeof statusConfig].label}
+                        {statusConfig[status as keyof typeof statusConfig]?.label || '알 수 없음'}
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
@@ -233,7 +414,7 @@ export default function GuestDashboardPage() {
                   <p className="text-gray-700 text-sm leading-relaxed">{proposal.message}</p>
                 </div>
 
-                {proposal.status === 'accepted' && (
+                {status === 'accepted' && (
                   <div className="bg-green-50 rounded-xl p-4 mb-4">
                     <h4 className="text-sm font-semibold text-green-800 mb-2">📞 크리에이터 연락처</h4>
                     <div className="space-y-1 text-sm">
@@ -262,12 +443,18 @@ export default function GuestDashboardPage() {
                     상세 보기
                   </Link>
 
-                  {proposal.status === 'pending' && (
+                  {status === 'pending' && (
                     <>
-                      <button className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold hover:shadow-xl transition">
+                      <button
+                        onClick={() => openAcceptModal(proposal.id)}
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold hover:shadow-xl transition"
+                      >
                         수락하기
                       </button>
-                      <button className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition">
+                      <button
+                        onClick={() => openRejectModal(proposal.id)}
+                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition"
+                      >
                         거절하기
                       </button>
                     </>
@@ -289,6 +476,71 @@ export default function GuestDashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Accept Confirmation Modal */}
+      {showAcceptModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              제안을 수락하시겠습니까?
+            </h3>
+            <p className="text-gray-600 mb-6">
+              수락하시면 크리에이터에게 연락처가 공개되며, 크리에이터의 연락처도 확인할 수 있습니다.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={closeAcceptModal}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleAccept}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold hover:shadow-xl transition"
+              >
+                수락하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <XCircle className="w-6 h-6 text-gray-600" />
+              제안을 거절하시겠습니까?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              거절 사유를 작성해주세요. (선택사항)
+            </p>
+            <textarea
+              rows={4}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 resize-none mb-6"
+              placeholder="예: 일정이 맞지 않습니다. / 출연료 조건이 맞지 않습니다."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={closeRejectModal}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleReject}
+                className="flex-1 px-6 py-3 bg-gray-600 text-white rounded-full font-bold hover:bg-gray-700 transition"
+              >
+                거절하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

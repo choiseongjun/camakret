@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -15,6 +15,16 @@ export default function Footer() {
             <p className="text-sm">
               크리에이터와 게스트, 장소를 연결하는<br />
               협업 플랫폼
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-white font-semibold mb-4">서비스 소개</h3>
+            <p className="text-sm leading-relaxed">
+              CreatorHub는 음식 크리에이터와<br />
+              게스트, 촬영 장소를 연결하여<br />
+              더 나은 콘텐츠를 만들 수 있도록<br />
+              돕는 협업 플랫폼입니다.
             </p>
           </div>
 

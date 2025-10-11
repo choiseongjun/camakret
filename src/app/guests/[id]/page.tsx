@@ -280,19 +280,19 @@ export default function GuestDetailPage() {
                 </div>
               </div>
 
-              {/* Fee */}
-              <div className="inline-block px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold text-lg mb-6">
-                출연료: {guest.fee}
+              {/* Fee & CTA Button */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold text-lg shadow-md">
+                  출연료: {guest.fee}
+                </div>
+                <button
+                  onClick={() => setShowProposalModal(true)}
+                  className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold text-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  협업 제안하기
+                </button>
               </div>
-
-              {/* CTA Button */}
-              <button
-                onClick={() => setShowProposalModal(true)}
-                className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold text-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2"
-              >
-                <Send className="w-5 h-5" />
-                협업 제안하기
-              </button>
             </div>
           </div>
         </div>

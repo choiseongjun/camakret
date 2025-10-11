@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, MapPin, DollarSign, Mail, Phone, CheckCircle, XCircle, Clock, Youtube, User } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
-// 임시 데이터 (dashboard와 동일)
+// 임시 데이터 (API 실패시 fallback)
 const mockProposals = [
   {
     id: '1',
@@ -88,25 +89,155 @@ export default function ProposalDetailPage() {
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [proposal, setProposal] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const proposal = mockProposals.find(p => p.id === params.id) || mockProposals[0];
-  const StatusIcon = statusConfig[proposal.status as keyof typeof statusConfig].icon;
+  useEffect(() => {
+    fetchProposal();
+  }, [params.id]);
 
-  const handleAccept = () => {
-    alert('제안을 수락했습니다!\n크리에이터의 연락처가 공개되었습니다.');
-    setShowAcceptModal(false);
-    router.push('/guest/dashboard');
+  const formatDate = (dateString: string) => {
+    if (!dateString) return dateString;
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      // 시간이 00:00이면 날짜만 표시
+      if (hours === '00' && minutes === '00') {
+        return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
+      }
+
+      return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일 ${hours}:${minutes}`;
+    } catch (e) {
+      return dateString;
+    }
   };
 
-  const handleReject = () => {
+  const fetchProposal = async () => {
+    try {
+      setLoading(true);
+      const response = await apiFetch(`/api/guests/proposals/${params.id}`);
+      const result = await response.json();
+
+      if (result.success) {
+        // Transform snake_case fields to camelCase for UI compatibility
+        const data = result.data;
+        const transformedData = {
+          id: data.id,
+          guestName: data.guest_name || data.guestName,
+          guestTitle: data.guest_title || data.guestTitle,
+          guestCategory: data.guest_category || data.guestCategory,
+          creatorName: data.creator_name || data.creatorName,
+          creatorEmail: data.creator_email || data.creatorEmail,
+          creatorPhone: data.creator_phone || data.creatorPhone,
+          creatorChannel: data.creator_channel || data.creatorChannel,
+          subscribers: data.creator_subscribers || data.subscribers,
+          avgViews: data.creator_avg_views || data.avgViews,
+          creatorBio: data.creator_bio || data.creatorBio,
+          contentIdea: data.content_idea || data.contentIdea,
+          shootingDate: formatDate(data.shooting_date || data.shootingDate),
+          location: data.location,
+          fee: data.fee,
+          message: data.message,
+          status: data.status,
+          createdAt: formatDate(data.created_at || data.createdAt)
+        };
+        setProposal(transformedData);
+      } else {
+        console.error('Failed to fetch proposal:', result.message);
+        // Fallback to mock data
+        setProposal(mockProposals.find(p => p.id === params.id) || mockProposals[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching proposal:', error);
+      // Fallback to mock data
+      setProposal(mockProposals.find(p => p.id === params.id) || mockProposals[0]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const StatusIcon = proposal ? statusConfig[proposal.status as keyof typeof statusConfig].icon : Clock;
+
+  const handleAccept = async () => {
+    try {
+      const response = await apiFetch(`/api/guests/proposals/${params.id}/accept`, {
+        method: 'POST'
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        alert('제안을 수락했습니다!\n크리에이터의 연락처가 공개되었습니다.');
+        setShowAcceptModal(false);
+        // Refresh proposal data
+        await fetchProposal();
+      } else {
+        alert('제안 수락에 실패했습니다: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error accepting proposal:', error);
+      alert('제안 수락 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleReject = async () => {
     if (!rejectReason.trim()) {
       alert('거절 사유를 입력해주세요.');
       return;
     }
-    alert('제안을 거절했습니다.\n크리에이터에게 알림이 전송됩니다.');
-    setShowRejectModal(false);
-    router.push('/guest/dashboard');
+
+    try {
+      const response = await apiFetch(`/api/guests/proposals/${params.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rejectReason })
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        alert('제안을 거절했습니다.\n크리에이터에게 알림이 전송됩니다.');
+        setShowRejectModal(false);
+        // Refresh proposal data
+        await fetchProposal();
+      } else {
+        alert('제안 거절에 실패했습니다: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error rejecting proposal:', error);
+      alert('제안 거절 중 오류가 발생했습니다.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <p className="text-xl text-gray-500">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!proposal) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <p className="text-xl text-gray-500">제안을 찾을 수 없습니다.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
@@ -120,8 +251,22 @@ export default function ProposalDetailPage() {
           목록으로 돌아가기
         </button>
 
-        {/* Status Badge */}
-        <div className="flex items-center justify-center mb-6">
+        {/* Guest Info & Status Badge */}
+        <div className="flex flex-col items-center gap-4 mb-6">
+          {proposal.guestName && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-3 rounded-full border-2 border-blue-200">
+              <div className="flex items-center gap-2 text-blue-800">
+                <span className="text-xl">👤</span>
+                <span className="font-bold text-lg">{proposal.guestName}</span>
+                {proposal.guestTitle && <span className="text-blue-700">· {proposal.guestTitle}</span>}
+                {proposal.guestCategory && (
+                  <span className="ml-2 px-3 py-1 bg-blue-200 text-blue-900 rounded-full text-sm font-bold">
+                    {proposal.guestCategory}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
           <span className={`px-6 py-3 rounded-full text-lg font-bold flex items-center gap-2 border-2 ${statusConfig[proposal.status as keyof typeof statusConfig].color}`}>
             <StatusIcon className="w-6 h-6" />
             {statusConfig[proposal.status as keyof typeof statusConfig].label}
