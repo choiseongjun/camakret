@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, MapPin, Star, Award, Users } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
@@ -159,6 +160,9 @@ interface Guest {
 }
 
 export default function GuestsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [selectedLocation, setSelectedLocation] = useState('전체');
@@ -169,14 +173,45 @@ export default function GuestsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalGuests, setTotalGuests] = useState(0);
 
+  // URL에서 페이지 번호 및 필터 복원
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+    const searchParam = searchParams.get('search');
+    const categoryParam = searchParams.get('category');
+    const locationParam = searchParams.get('location');
+    const feeTypeParam = searchParams.get('feeType');
+
+    if (pageParam) setPage(parseInt(pageParam));
+    if (searchParam) setSearchTerm(searchParam);
+    if (categoryParam) setSelectedCategory(categoryParam);
+    if (locationParam) setSelectedLocation(locationParam);
+    if (feeTypeParam) setSelectedFeeType(feeTypeParam);
+  }, []);
+
   useEffect(() => {
     fetchGuests();
+    updateURL();
   }, [page, searchTerm, selectedCategory, selectedLocation, selectedFeeType]);
 
   // 필터 변경 시 페이지 1로 리셋
   useEffect(() => {
-    setPage(1);
+    if (page !== 1) {
+      setPage(1);
+    }
   }, [searchTerm, selectedCategory, selectedLocation, selectedFeeType]);
+
+  const updateURL = () => {
+    const params = new URLSearchParams();
+    if (page !== 1) params.set('page', page.toString());
+    if (searchTerm) params.set('search', searchTerm);
+    if (selectedCategory !== '전체') params.set('category', selectedCategory);
+    if (selectedLocation !== '전체') params.set('location', selectedLocation);
+    if (selectedFeeType !== '전체') params.set('feeType', selectedFeeType);
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `/guests?${queryString}` : '/guests';
+    router.replace(newUrl, { scroll: false });
+  };
 
   const fetchGuests = async () => {
     try {
