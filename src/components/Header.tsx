@@ -17,9 +17,9 @@ export default function Header() {
             <span className="text-xl font-bold text-gray-900">CreatorHub</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/creators" className="text-gray-600 hover:text-gray-900 transition">크리에이터</Link>
-            <Link href="/community" className="text-gray-600 hover:text-gray-900 transition">커뮤니티</Link>
-            <Link href="/reviews" className="text-gray-600 hover:text-gray-900 transition">리뷰</Link>
+            <Link href="/guests" className="text-gray-600 hover:text-gray-900 transition">게스트 찾기</Link>
+            <Link href="/register-guest" className="text-gray-600 hover:text-gray-900 transition">게스트 등록</Link>
+            <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition">이용 방법</Link>
             {!authLoading && (
               user ? (
                 <>
