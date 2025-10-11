@@ -153,6 +153,7 @@ interface Guest {
   rating: number;
   collab_count: number;
   bio: string;
+  profile_image: string | null;
   avg_rating?: number;
 }
 
@@ -304,8 +305,18 @@ export default function GuestsPage() {
             >
               {/* Profile Header */}
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
-                  {categoryEmoji[guest.category] || '👤'}
+                <div className="w-16 h-16 rounded-full flex-shrink-0">
+                  {guest.profile_image ? (
+                    <img
+                      src={`https://creatorhub-real.s3.ap-northeast-2.amazonaws.com/${guest.profile_image}`}
+                      alt={guest.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-3xl">
+                      {categoryEmoji[guest.category] || '👤'}
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{guest.name}</h3>

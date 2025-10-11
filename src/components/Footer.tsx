@@ -13,8 +13,8 @@ export default function Footer() {
               <span className="text-xl font-bold text-white">CreatorHub</span>
             </div>
             <p className="text-sm">
-              크리에이터와 게스트를 연결하는<br />
-              최고의 플랫폼
+              크리에이터와 게스트, 장소를 연결하는<br />
+              협업 플랫폼
             </p>
           </div>
 

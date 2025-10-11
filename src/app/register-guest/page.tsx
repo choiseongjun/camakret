@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Upload, Plus, X, ArrowRight } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 const categories = [
   '운동/건강',
@@ -47,31 +48,34 @@ export default function RegisterGuestPage() {
 
   const [formData, setFormData] = useState({
     // Step 1: 기본 정보
-    name: '',
-    title: '',
-    category: '',
-    location: '',
-    phone: '',
-    email: '',
+    name: '홍길동',
+    title: 'IT 전문가',
+    category: '전문직',
+    location: '서울 강남',
+    phone: '010-1234-5678',
+    email: 'test@example.com',
+    profileImage: null as File | null,
 
     // Step 2: 전문성
-    bio: '',
-    expertise: [] as string[],
+    bio: '10년차 IT 전문가입니다. 다양한 프로젝트 경험을 가지고 있습니다.',
+    expertise: ['웹 개발', '서버 관리'] as string[],
     newExpertise: '',
-    portfolio: [] as string[],
+    portfolio: ['A 프로젝트 참여', 'B 서비스 개발'] as string[],
     newPortfolio: '',
 
     // Step 3: 출연 조건
-    availability: '',
-    fee: '',
-    contentIdeas: [] as string[],
+    availability: '주말',
+    fee: '협의 가능',
+    contentIdeas: ['최신 IT 트렌드 소개', '코딩 초보자들을 위한 팁'] as string[],
     newContentIdea: '',
 
     // Step 4: 추가 정보
-    socialMedia: '',
-    website: '',
-    pastWorks: ''
+    socialMedia: 'https://instagram.com/test',
+    website: 'https://example.com',
+    pastWorks: 'C 채널 출연'
   });
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleAddItem = (field: 'expertise' | 'portfolio' | 'contentIdeas', newField: 'newExpertise' | 'newPortfolio' | 'newContentIdea') => {
     const value = formData[newField];
@@ -91,36 +95,92 @@ export default function RegisterGuestPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 파일 크기 체크 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('이미지 파일 크기는 5MB 이하여야 합니다.');
+        return;
+      }
+
+      // 파일 형식 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+
+      setFormData({ ...formData, profileImage: file });
+
+      // 미리보기 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, profileImage: null });
+    setImagePreview(null);
+  };
+
+  const handleSubmit = async () => {
+    // Step 4가 아니면 제출하지 않음
+    if (step !== 4) {
+      return;
+    }
+
+    // 필수 필드 검증
+    if (!formData.name || !formData.title || !formData.category || !formData.location ||
+        !formData.phone || !formData.email || !formData.bio ||
+        formData.expertise.length === 0 || formData.portfolio.length === 0 ||
+        !formData.availability || !formData.fee || formData.contentIdeas.length === 0) {
+      alert('필수 정보를 모두 입력해주세요.');
+      return;
+    }
 
     try {
-      // API 요청 데이터 준비
-      const requestData = {
-        userId: null, // TODO: 로그인 시스템 연동 후 실제 사용자 ID 전달
-        name: formData.name,
-        title: formData.title,
-        category: formData.category,
-        location: formData.location,
-        phone: formData.phone,
-        email: formData.email,
-        bio: formData.bio,
-        expertise: formData.expertise,
-        portfolio: formData.portfolio,
-        availability: formData.availability,
-        fee: formData.fee,
-        contentIdeas: formData.contentIdeas,
-        socialMedia: formData.socialMedia || null,
-        website: formData.website || null,
-        pastWorks: formData.pastWorks || null
-      };
+      // 디버깅: 현재 폼 데이터 확인
+      console.log('=== Form Data Before Sending ===');
+      console.log('formData:', formData);
 
-      const response = await fetch('http://localhost:5000/api/guests/register', {
+      // FormData 생성 (이미지 업로드를 위해)
+      const formDataToSend = new FormData();
+
+      // 이미지 파일 추가
+      if (formData.profileImage) {
+        formDataToSend.append('profileImage', formData.profileImage);
+      }
+
+      // 나머지 데이터 추가
+      // formDataToSend.append('userId', 'null'); // TODO: 로그인 시스템 연동 후 실제 사용자 ID 전달
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('location', formData.location);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('bio', formData.bio);
+      formDataToSend.append('expertise', JSON.stringify(formData.expertise));
+      formDataToSend.append('portfolio', JSON.stringify(formData.portfolio));
+      formDataToSend.append('availability', formData.availability);
+      formDataToSend.append('fee', formData.fee);
+      formDataToSend.append('contentIdeas', JSON.stringify(formData.contentIdeas));
+      formDataToSend.append('socialMedia', formData.socialMedia || '');
+      formDataToSend.append('website', formData.website || '');
+      formDataToSend.append('pastWorks', formData.pastWorks || '');
+
+      // FormData 내용 로깅
+      console.log('=== FormData Contents ===');
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + (pair[1] instanceof File ? 'File: ' + pair[1].name : pair[1]));
+      }
+
+      const response = await apiFetch('/api/guests/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
+        body: formDataToSend
       });
 
       const result = await response.json();
@@ -196,12 +256,53 @@ export default function RegisterGuestPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => e.preventDefault()}>
           <div className="bg-white rounded-3xl p-8 shadow-xl">
             {/* Step 1: 기본 정보 */}
             {step === 1 && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">기본 정보</h2>
+
+                {/* 프로필 이미지 업로드 */}
+                <div className="flex flex-col items-center mb-8">
+                  <label className="block text-sm font-semibold text-gray-700 mb-4">
+                    프로필 이미지
+                  </label>
+                  <div className="relative">
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="프로필 미리보기"
+                          className="w-32 h-32 rounded-full object-cover border-4 border-teal-500 shadow-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer">
+                        <div className="w-32 h-32 rounded-full border-4 border-dashed border-gray-300 flex flex-col items-center justify-center hover:border-teal-500 transition bg-gray-50">
+                          <Upload className="w-8 h-8 text-gray-400" />
+                          <span className="text-xs text-gray-500 mt-2">이미지 선택</span>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    JPG, PNG, GIF, WEBP (최대 5MB)
+                  </p>
+                </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -522,6 +623,11 @@ export default function RegisterGuestPage() {
                     placeholder="인스타그램, 유튜브 등"
                     value={formData.socialMedia}
                     onChange={(e) => setFormData({ ...formData, socialMedia: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
 
@@ -530,11 +636,16 @@ export default function RegisterGuestPage() {
                     웹사이트/블로그
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                     placeholder="https://..."
                     value={formData.website}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
 
@@ -598,7 +709,8 @@ export default function RegisterGuestPage() {
                 </button>
               ) : (
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold hover:shadow-xl transition"
                 >
                   등록 완료

@@ -17,13 +17,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CreatorHub - 크리에이터와 팬을 연결하는 플랫폼",
-  description: "당신이 좋아하는 크리에이터를 찾아보세요. 수천 명의 크리에이터와 함께하는 플랫폼, CreatorHub에서 리뷰를 작성하고 커뮤니티에서 소통하세요.",
-  keywords: ["크리에이터", "유튜버", "먹방", "스트리머", "리뷰", "커뮤니티"],
+  title: "CreatorHub - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
+  description: "크리에이터를 위한 올인원 플랫폼. 게스트 섭외, 촬영 장소 추천, 리뷰 및 커뮤니티. 유튜버, 스트리머, 인플루언서를 위한 최고의 협업 파트너를 찾아보세요.",
+  keywords: ["크리에이터", "유튜버", "먹방", "스트리머", "게스트 섭외", "촬영 장소", "협업", "출연자", "콜라보", "리뷰", "커뮤니티", "인플루언서", "콘텐츠 제작"],
   authors: [{ name: "CreatorHub" }],
   openGraph: {
-    title: "CreatorHub - 크리에이터와 팬을 연결하는 플랫폼",
-    description: "당신이 좋아하는 크리에이터를 찾아보세요",
+    title: "CreatorHub - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
+    description: "게스트 섭외부터 촬영 장소까지, 크리에이터를 위한 모든 것",
     url: "https://creatorhub.kr",
     siteName: "CreatorHub",
     locale: "ko_KR",
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CreatorHub - 크리에이터와 팬을 연결하는 플랫폼",
-    description: "당신이 좋아하는 크리에이터를 찾아보세요",
+    title: "CreatorHub - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
+    description: "게스트 섭외부터 촬영 장소까지, 크리에이터를 위한 모든 것",
   },
 };
 

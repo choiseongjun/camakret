@@ -88,6 +88,7 @@ interface Guest {
   phone: string;
   email: string;
   content_ideas: string[];
+  profile_image: string | null;
   past_works?: string;
   social_media?: string;
   website?: string;
@@ -231,8 +232,18 @@ export default function GuestDetailPage() {
         <div className="bg-white rounded-3xl p-8 shadow-xl mb-8">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Profile Image */}
-            <div className="w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-6xl flex-shrink-0">
-              {categoryEmoji[guest.category] || '👤'}
+            <div className="w-32 h-32 rounded-full flex-shrink-0">
+              {guest.profile_image ? (
+                <img
+                  src={`https://creatorhub-real.s3.ap-northeast-2.amazonaws.com/${guest.profile_image}`}
+                  alt={guest.name}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-6xl">
+                  {categoryEmoji[guest.category] || '👤'}
+                </div>
+              )}
             </div>
 
             {/* Profile Info */}
