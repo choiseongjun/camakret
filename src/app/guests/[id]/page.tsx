@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Star, Users, Award, Calendar, Phone, Mail, Send, X } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 // 임시 데이터 (guests/page.tsx와 동일)
 const mockGuests = [
@@ -134,7 +135,7 @@ export default function GuestDetailPage() {
   const fetchGuestDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/guests/${params.id}`);
+      const response = await apiFetch(`/api/guests/${params.id}`);
       const result = await response.json();
 
       if (result.success) {
@@ -158,7 +159,7 @@ export default function GuestDetailPage() {
     if (!guest) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/guests/${guest.id}/proposals`, {
+      const response = await apiFetch(`/api/guests/${guest.id}/proposals`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

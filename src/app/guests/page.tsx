@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, MapPin, Star, Award, Users } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 // 임시 게스트 데이터 (나중에 DB로 교체)
 const mockGuests = [
@@ -190,7 +191,7 @@ export default function GuestsPage() {
       if (selectedLocation !== '전체') params.append('location', selectedLocation);
       if (selectedFeeType !== '전체') params.append('feeType', selectedFeeType);
 
-      const response = await fetch(`http://localhost:5000/api/guests?${params.toString()}`);
+      const response = await apiFetch(`/api/guests?${params.toString()}`);
       const result = await response.json();
 
       if (result.success) {
