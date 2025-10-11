@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Upload, Plus, X, ArrowRight } from 'lucide-react';
+import { CheckCircle, Upload, Plus, X, ArrowRight, LogIn } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const categories = [
   '운동/건강',
@@ -44,36 +45,47 @@ const availabilityOptions = [
 
 export default function RegisterGuestPage() {
   const router = useRouter();
+  const { user, loading, login } = useAuth();
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
     // Step 1: 기본 정보
-    name: '홍길동',
-    title: 'IT 전문가',
-    category: '전문직',
-    location: '서울 강남',
-    phone: '010-1234-5678',
-    email: 'test@example.com',
+    name: '',
+    title: '',
+    category: '',
+    location: '',
+    phone: '',
+    email: '',
     profileImage: null as File | null,
 
     // Step 2: 전문성
-    bio: '10년차 IT 전문가입니다. 다양한 프로젝트 경험을 가지고 있습니다.',
-    expertise: ['웹 개발', '서버 관리'] as string[],
+    bio: '',
+    expertise: [] as string[],
     newExpertise: '',
-    portfolio: ['A 프로젝트 참여', 'B 서비스 개발'] as string[],
+    portfolio: [] as string[],
     newPortfolio: '',
 
     // Step 3: 출연 조건
-    availability: '주말',
-    fee: '협의 가능',
-    contentIdeas: ['최신 IT 트렌드 소개', '코딩 초보자들을 위한 팁'] as string[],
+    availability: '',
+    fee: '',
+    contentIdeas: [] as string[],
     newContentIdea: '',
 
     // Step 4: 추가 정보
-    socialMedia: 'https://instagram.com/test',
-    website: 'https://example.com',
-    pastWorks: 'C 채널 출연'
+    socialMedia: '',
+    website: '',
+    pastWorks: ''
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user]);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -98,21 +110,15 @@ export default function RegisterGuestPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 파일 크기 체크 (5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert('이미지 파일 크기는 5MB 이하여야 합니다.');
         return;
       }
-
-      // 파일 형식 체크
       if (!file.type.startsWith('image/')) {
         alert('이미지 파일만 업로드 가능합니다.');
         return;
       }
-
       setFormData({ ...formData, profileImage: file });
-
-      // 미리보기 생성
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -127,12 +133,16 @@ export default function RegisterGuestPage() {
   };
 
   const handleSubmit = async () => {
-    // Step 4가 아니면 제출하지 않음
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      login();
+      return;
+    }
+
     if (step !== 4) {
       return;
     }
 
-    // 필수 필드 검증
     if (!formData.name || !formData.title || !formData.category || !formData.location ||
         !formData.phone || !formData.email || !formData.bio ||
         formData.expertise.length === 0 || formData.portfolio.length === 0 ||
@@ -142,20 +152,12 @@ export default function RegisterGuestPage() {
     }
 
     try {
-      // 디버깅: 현재 폼 데이터 확인
-      console.log('=== Form Data Before Sending ===');
-      console.log('formData:', formData);
-
-      // FormData 생성 (이미지 업로드를 위해)
       const formDataToSend = new FormData();
-
-      // 이미지 파일 추가
       if (formData.profileImage) {
         formDataToSend.append('profileImage', formData.profileImage);
       }
 
-      // 나머지 데이터 추가
-      // formDataToSend.append('userId', 'null'); // TODO: 로그인 시스템 연동 후 실제 사용자 ID 전달
+      formDataToSend.append('userId', user.id.toString());
       formDataToSend.append('name', formData.name);
       formDataToSend.append('title', formData.title);
       formDataToSend.append('category', formData.category);
@@ -171,12 +173,6 @@ export default function RegisterGuestPage() {
       formDataToSend.append('socialMedia', formData.socialMedia || '');
       formDataToSend.append('website', formData.website || '');
       formDataToSend.append('pastWorks', formData.pastWorks || '');
-
-      // FormData 내용 로깅
-      console.log('=== FormData Contents ===');
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ': ' + (pair[1] instanceof File ? 'File: ' + pair[1].name : pair[1]));
-      }
 
       const response = await apiFetch('/api/guests/register', {
         method: 'POST',
@@ -212,6 +208,37 @@ export default function RegisterGuestPage() {
         return false;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <p className="text-xl text-gray-500">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center bg-white p-12 rounded-3xl shadow-xl">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">로그인 필요</h1>
+            <p className="text-lg text-gray-600 mb-8">게스트로 등록하려면 먼저 로그인이 필요합니다.</p>
+            <button
+              onClick={login}
+              className="px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold text-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2 mx-auto"
+            >
+              <LogIn className="w-6 h-6" />
+              Google로 로그인
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
