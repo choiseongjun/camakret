@@ -91,11 +91,50 @@ export default function RegisterGuestPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제로는 API 호출
-    alert('게스트 등록이 완료되었습니다!\n검토 후 승인되면 이메일로 알려드립니다.');
-    router.push('/');
+
+    try {
+      // API 요청 데이터 준비
+      const requestData = {
+        userId: null, // TODO: 로그인 시스템 연동 후 실제 사용자 ID 전달
+        name: formData.name,
+        title: formData.title,
+        category: formData.category,
+        location: formData.location,
+        phone: formData.phone,
+        email: formData.email,
+        bio: formData.bio,
+        expertise: formData.expertise,
+        portfolio: formData.portfolio,
+        availability: formData.availability,
+        fee: formData.fee,
+        contentIdeas: formData.contentIdeas,
+        socialMedia: formData.socialMedia || null,
+        website: formData.website || null,
+        pastWorks: formData.pastWorks || null
+      };
+
+      const response = await fetch('http://localhost:5000/api/guests/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('게스트 등록이 완료되었습니다!\n검토 후 승인되면 이메일로 알려드립니다.');
+        router.push('/');
+      } else {
+        alert('등록 중 오류가 발생했습니다: ' + result.message);
+      }
+    } catch (error) {
+      console.error('게스트 등록 에러:', error);
+      alert('등록 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+    }
   };
 
   const canProceedToNextStep = () => {
@@ -115,7 +154,7 @@ export default function RegisterGuestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
@@ -127,13 +166,13 @@ export default function RegisterGuestPage() {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3, 4].map((s) => (
-              <div key={s} className="flex items-center flex-1">
+              <div key={s} className="flex items-center flex-1 last:flex-none">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition ${
                     s < step
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-teal-600 text-white'
                       : s === step
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white'
+                      ? 'bg-gradient-to-r from-teal-400 to-green-500 text-white'
                       : 'bg-gray-200 text-gray-400'
                   }`}
                 >
@@ -142,18 +181,18 @@ export default function RegisterGuestPage() {
                 {s < 4 && (
                   <div
                     className={`flex-1 h-1 mx-2 transition ${
-                      s < step ? 'bg-purple-600' : 'bg-gray-200'
+                      s < step ? 'bg-teal-600' : 'bg-gray-200'
                     }`}
                   />
                 )}
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span className={step === 1 ? 'font-bold text-purple-600' : ''}>기본 정보</span>
-            <span className={step === 2 ? 'font-bold text-purple-600' : ''}>전문성</span>
-            <span className={step === 3 ? 'font-bold text-purple-600' : ''}>출연 조건</span>
-            <span className={step === 4 ? 'font-bold text-purple-600' : ''}>추가 정보</span>
+          <div className="grid grid-cols-4 gap-2 text-xs sm:text-sm text-gray-600 text-center">
+            <span className={`${step === 1 ? 'font-bold text-teal-600' : ''}`}>1. 기본정보</span>
+            <span className={`${step === 2 ? 'font-bold text-teal-600' : ''}`}>2. 전문성</span>
+            <span className={`${step === 3 ? 'font-bold text-teal-600' : ''}`}>3. 출연조건</span>
+            <span className={`${step === 4 ? 'font-bold text-teal-600' : ''}`}>4. 추가정보</span>
           </div>
         </div>
 
@@ -172,7 +211,7 @@ export default function RegisterGuestPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="김철수"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -186,7 +225,7 @@ export default function RegisterGuestPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="퍼스널 트레이너"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -201,7 +240,7 @@ export default function RegisterGuestPage() {
                     </label>
                     <select
                       required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     >
@@ -218,7 +257,7 @@ export default function RegisterGuestPage() {
                     </label>
                     <select
                       required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     >
@@ -238,7 +277,7 @@ export default function RegisterGuestPage() {
                     <input
                       type="tel"
                       required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="010-1234-5678"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -252,7 +291,7 @@ export default function RegisterGuestPage() {
                     <input
                       type="email"
                       required
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="email@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -260,8 +299,8 @@ export default function RegisterGuestPage() {
                   </div>
                 </div>
 
-                <div className="bg-purple-50 p-4 rounded-xl">
-                  <p className="text-sm text-purple-800">
+                <div className="bg-green-50 p-4 rounded-xl">
+                  <p className="text-sm text-green-800">
                     💡 <strong>Tip:</strong> 연락처와 이메일은 제안 수락 시에만 크리에이터에게 공개됩니다.
                   </p>
                 </div>
@@ -280,7 +319,7 @@ export default function RegisterGuestPage() {
                   <textarea
                     required
                     rows={4}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 resize-none"
                     placeholder="경력, 전문 분야, 강점 등을 소개해주세요."
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
@@ -294,7 +333,7 @@ export default function RegisterGuestPage() {
                   <div className="flex gap-2 mb-3">
                     <input
                       type="text"
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="예: 다이어트, 근력 운동"
                       value={formData.newExpertise}
                       onChange={(e) => setFormData({ ...formData, newExpertise: e.target.value })}
@@ -308,7 +347,7 @@ export default function RegisterGuestPage() {
                     <button
                       type="button"
                       onClick={() => handleAddItem('expertise', 'newExpertise')}
-                      className="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition"
+                      className="px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition"
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -317,7 +356,7 @@ export default function RegisterGuestPage() {
                     {formData.expertise.map((exp, idx) => (
                       <span
                         key={idx}
-                        className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium flex items-center gap-2"
+                        className="px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-sm font-medium flex items-center gap-2"
                       >
                         {exp}
                         <button
@@ -339,7 +378,7 @@ export default function RegisterGuestPage() {
                   <div className="flex gap-2 mb-3">
                     <input
                       type="text"
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="예: 생활스포츠지도사 1급"
                       value={formData.newPortfolio}
                       onChange={(e) => setFormData({ ...formData, newPortfolio: e.target.value })}
@@ -353,7 +392,7 @@ export default function RegisterGuestPage() {
                     <button
                       type="button"
                       onClick={() => handleAddItem('portfolio', 'newPortfolio')}
-                      className="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition"
+                      className="px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition"
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -390,7 +429,7 @@ export default function RegisterGuestPage() {
                   </label>
                   <select
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                     value={formData.availability}
                     onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
                   >
@@ -408,7 +447,7 @@ export default function RegisterGuestPage() {
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                     placeholder="예: 무료 (홍보 목적), 협의 가능, 50만원"
                     value={formData.fee}
                     onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
@@ -425,7 +464,7 @@ export default function RegisterGuestPage() {
                   <div className="flex gap-2 mb-3">
                     <input
                       type="text"
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                       placeholder="예: 30일 홈트 챌린지"
                       value={formData.newContentIdea}
                       onChange={(e) => setFormData({ ...formData, newContentIdea: e.target.value })}
@@ -439,7 +478,7 @@ export default function RegisterGuestPage() {
                     <button
                       type="button"
                       onClick={() => handleAddItem('contentIdeas', 'newContentIdea')}
-                      className="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition"
+                      className="px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition"
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -448,7 +487,7 @@ export default function RegisterGuestPage() {
                     {formData.contentIdeas.map((idea, idx) => (
                       <div
                         key={idx}
-                        className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl flex items-start justify-between border-2 border-purple-100"
+                        className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl flex items-start justify-between border-2 border-green-100"
                       >
                         <div className="flex items-start gap-2 flex-1">
                           <span className="text-lg">💡</span>
@@ -479,7 +518,7 @@ export default function RegisterGuestPage() {
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                     placeholder="인스타그램, 유튜브 등"
                     value={formData.socialMedia}
                     onChange={(e) => setFormData({ ...formData, socialMedia: e.target.value })}
@@ -492,7 +531,7 @@ export default function RegisterGuestPage() {
                   </label>
                   <input
                     type="url"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                     placeholder="https://..."
                     value={formData.website}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
@@ -505,26 +544,26 @@ export default function RegisterGuestPage() {
                   </label>
                   <textarea
                     rows={4}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 resize-none"
                     placeholder="이전에 출연했던 유튜브 채널이나 영상이 있다면 알려주세요."
                     value={formData.pastWorks}
                     onChange={(e) => setFormData({ ...formData, pastWorks: e.target.value })}
                   />
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
                   <h3 className="font-bold text-lg text-gray-900 mb-3">🎉 등록 완료 준비!</h3>
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-purple-600" />
+                      <CheckCircle className="w-5 h-5 text-teal-600" />
                       검토 후 24시간 내 승인 결과 이메일 발송
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-purple-600" />
+                      <CheckCircle className="w-5 h-5 text-teal-600" />
                       승인 즉시 크리에이터들에게 프로필 노출
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-purple-600" />
+                      <CheckCircle className="w-5 h-5 text-teal-600" />
                       제안 받으면 이메일로 알림
                     </li>
                   </ul>
@@ -550,7 +589,7 @@ export default function RegisterGuestPage() {
                   disabled={!canProceedToNextStep()}
                   className={`flex-1 px-6 py-3 rounded-full font-bold transition flex items-center justify-center gap-2 ${
                     canProceedToNextStep()
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:shadow-xl'
+                      ? 'bg-gradient-to-r from-teal-400 to-green-500 text-white hover:shadow-xl'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
@@ -560,7 +599,7 @@ export default function RegisterGuestPage() {
               ) : (
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full font-bold hover:shadow-xl transition"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold hover:shadow-xl transition"
                 >
                   등록 완료
                 </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, MapPin, Star, Award, Users } from 'lucide-react';
 
@@ -142,27 +142,70 @@ const categories = [
 
 const locations = ['전체', '서울 강남', '서울 마포', '서울 서초', '서울 종로', '서울 용산', '서울 성동'];
 
+interface Guest {
+  id: number;
+  name: string;
+  title: string;
+  category: string;
+  location: string;
+  expertise: string[];
+  fee: string;
+  rating: number;
+  collab_count: number;
+  bio: string;
+  avg_rating?: number;
+}
+
 export default function GuestsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [selectedLocation, setSelectedLocation] = useState('전체');
   const [selectedFeeType, setSelectedFeeType] = useState('전체');
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalGuests, setTotalGuests] = useState(0);
 
-  const filteredGuests = mockGuests.filter(guest => {
-    const matchesSearch = guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         guest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         guest.expertise.some(e => e.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === '전체' || guest.category === selectedCategory;
-    const matchesLocation = selectedLocation === '전체' || guest.location === selectedLocation;
-    const matchesFee = selectedFeeType === '전체' ||
-                      (selectedFeeType === '무료' && guest.fee.includes('무료')) ||
-                      (selectedFeeType === '유료' && !guest.fee.includes('무료'));
+  useEffect(() => {
+    fetchGuests();
+  }, [page, searchTerm, selectedCategory, selectedLocation, selectedFeeType]);
 
-    return matchesSearch && matchesCategory && matchesLocation && matchesFee;
-  });
+  // 필터 변경 시 페이지 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedFeeType]);
+
+  const fetchGuests = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '12'
+      });
+
+      if (searchTerm) params.append('search', searchTerm);
+      if (selectedCategory !== '전체') params.append('category', selectedCategory);
+      if (selectedLocation !== '전체') params.append('location', selectedLocation);
+      if (selectedFeeType !== '전체') params.append('feeType', selectedFeeType);
+
+      const response = await fetch(`http://localhost:5000/api/guests?${params.toString()}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setGuests(result.data);
+        setTotalPages(result.pagination.totalPages);
+        setTotalGuests(result.pagination.total);
+      }
+    } catch (error) {
+      console.error('게스트 목록 조회 에러:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
@@ -177,7 +220,7 @@ export default function GuestsPage() {
             <input
               type="text"
               placeholder="게스트 이름, 직업, 전문성으로 검색..."
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-full text-lg focus:outline-none focus:border-orange-500 transition"
+              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-full text-lg focus:outline-none focus:border-green-500 transition"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -187,7 +230,7 @@ export default function GuestsPage() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 justify-center mb-8">
           <select
-            className="px-6 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-orange-500 bg-white"
+            className="px-6 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-green-500 bg-white"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
@@ -197,7 +240,7 @@ export default function GuestsPage() {
           </select>
 
           <select
-            className="px-6 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-orange-500 bg-white"
+            className="px-6 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-green-500 bg-white"
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(e.target.value)}
           >
@@ -207,7 +250,7 @@ export default function GuestsPage() {
           </select>
 
           <select
-            className="px-6 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-orange-500 bg-white"
+            className="px-6 py-3 border-2 border-gray-200 rounded-full focus:outline-none focus:border-green-500 bg-white"
             value={selectedFeeType}
             onChange={(e) => setSelectedFeeType(e.target.value)}
           >
@@ -220,13 +263,40 @@ export default function GuestsPage() {
         {/* Stats */}
         <div className="text-center mb-8">
           <p className="text-gray-600">
-            <span className="font-bold text-orange-600">{filteredGuests.length}명</span>의 게스트를 찾았습니다
+            {loading ? (
+              <span>로딩 중...</span>
+            ) : (
+              <>
+                총 <span className="font-bold text-green-600">{totalGuests}명</span>의 게스트
+                {searchTerm || selectedCategory !== '전체' || selectedLocation !== '전체' || selectedFeeType !== '전체'
+                  ? ' 검색됨'
+                  : ''}
+              </>
+            )}
           </p>
         </div>
 
         {/* Guest Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGuests.map((guest) => (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="text-4xl mb-4">⏳</div>
+            <p className="text-xl text-gray-500">로딩 중...</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {guests.map((guest) => {
+              const categoryEmoji: Record<string, string> = {
+                '운동/건강': '💪',
+                '요리/음식': '🍳',
+                '전문직': '⚖️',
+                '예술/공연': '🎭',
+                '뷰티/패션': '💄',
+                '교육/강연': '📚',
+                '게임/e스포츠': '🎮',
+                '여행/모험': '🌍'
+              };
+
+              return (
             <Link
               key={guest.id}
               href={`/guests/${guest.id}`}
@@ -234,12 +304,12 @@ export default function GuestsPage() {
             >
               {/* Profile Header */}
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-purple-100 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
-                  {guest.image}
+                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+                  {categoryEmoji[guest.category] || '👤'}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{guest.name}</h3>
-                  <p className="text-sm text-orange-600 font-semibold mb-1">{guest.title}</p>
+                  <p className="text-sm text-green-600 font-semibold mb-1">{guest.title}</p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <MapPin className="w-4 h-4" />
                     <span>{guest.location}</span>
@@ -255,7 +325,7 @@ export default function GuestsPage() {
                 {guest.expertise.slice(0, 3).map((exp, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-medium"
+                    className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium"
                   >
                     {exp}
                   </span>
@@ -267,31 +337,104 @@ export default function GuestsPage() {
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                    <span className="font-semibold">{guest.rating}</span>
+                    <span className="font-semibold">{guest.avg_rating || guest.rating || 0}</span>
                   </div>
                   <div className="flex items-center gap-1 text-gray-600">
                     <Users className="w-4 h-4" />
-                    <span>{guest.collabCount}회 협업</span>
+                    <span>{guest.collab_count}회 협업</span>
                   </div>
                 </div>
               </div>
 
               {/* Fee */}
               <div className="mt-3">
-                <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                <span className="text-xs font-semibold text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
                   {guest.fee}
                 </span>
               </div>
             </Link>
-          ))}
-        </div>
+            );
+          })}
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredGuests.length === 0 && (
+        {!loading && guests.length === 0 && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
             <p className="text-xl text-gray-500 mb-2">검색 결과가 없습니다</p>
             <p className="text-gray-400">다른 조건으로 검색해보세요</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && guests.length > 0 && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            {/* Previous Button */}
+            <button
+              onClick={() => setPage(page - 1)}
+              disabled={page === 1}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                page === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 shadow-md'
+              }`}
+            >
+              이전
+            </button>
+
+            {/* Page Numbers */}
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                // 현재 페이지 주변만 표시
+                if (
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  (pageNum >= page - 2 && pageNum <= page + 2)
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`w-10 h-10 rounded-lg font-semibold transition ${
+                        page === pageNum
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg'
+                          : 'bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 shadow-md'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                } else if (pageNum === page - 3 || pageNum === page + 3) {
+                  return (
+                    <span key={pageNum} className="flex items-center px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={() => setPage(page + 1)}
+              disabled={page === totalPages}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                page === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 shadow-md'
+              }`}
+            >
+              다음
+            </button>
+          </div>
+        )}
+
+        {/* Page Info */}
+        {!loading && guests.length > 0 && (
+          <div className="text-center mt-6 text-sm text-gray-500">
+            {page} / {totalPages} 페이지
           </div>
         )}
       </main>

@@ -29,7 +29,7 @@ export default function Header() {
                   </button>
                 </>
               ) : (
-                <Link href="/login" className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-medium hover:shadow-lg transition">
+                <Link href="/login" className="px-6 py-2.5 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-medium hover:shadow-lg transition">
                   로그인
                 </Link>
               )

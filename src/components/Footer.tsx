@@ -7,13 +7,13 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">🎬</span>
               </div>
               <span className="text-xl font-bold text-white">CreatorHub</span>
             </div>
             <p className="text-sm">
-              크리에이터와 팬을 연결하는<br />
+              크리에이터와 게스트를 연결하는<br />
               최고의 플랫폼
             </p>
           </div>
@@ -21,10 +21,9 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">서비스</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/creators" className="hover:text-white transition">크리에이터</Link></li>
-              <li><Link href="/recommendations" className="hover:text-white transition">맞춤 추천</Link></li>
-              <li><Link href="/community" className="hover:text-white transition">커뮤니티</Link></li>
-              <li><Link href="/reviews" className="hover:text-white transition">리뷰</Link></li>
+              <li><Link href="/guests" className="hover:text-white transition">게스트 찾기</Link></li>
+              <li><Link href="/register-guest" className="hover:text-white transition">게스트 등록</Link></li>
+              <li><Link href="/how-it-works" className="hover:text-white transition">이용 방법</Link></li>
             </ul>
           </div>
 
@@ -34,7 +33,7 @@ export default function Footer() {
               <p className="mb-2">크리에이터 협업 및 제휴 문의</p>
               <a
                 href="mailto:creatorhub987@gmail.com"
-                className="text-orange-400 hover:text-orange-300 transition flex items-center gap-2"
+                className="text-green-400 hover:text-green-300 transition flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />

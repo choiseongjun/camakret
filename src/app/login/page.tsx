@@ -40,29 +40,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">🎬</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">CreatorHub</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/creators" className="text-gray-600 hover:text-gray-900 transition">크리에이터</Link>
-              <Link href="/community" className="text-gray-600 hover:text-gray-900 transition">커뮤니티</Link>
-              <Link href="/reviews" className="text-gray-600 hover:text-gray-900 transition">리뷰</Link>
-              <Link href="#about" className="text-gray-600 hover:text-gray-900 transition">소개</Link>
-              <Link href="/login" className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-medium hover:shadow-lg transition">
-                로그인
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
       <main className="flex items-center justify-center py-12 sm:py-24 px-4">
         <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 sm:p-10">
           <div className="text-center mb-8">

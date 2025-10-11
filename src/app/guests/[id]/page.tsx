@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Star, Users, Award, Calendar, Phone, Mail, Send, X } from 'lucide-react';
 
@@ -72,11 +72,42 @@ const mockGuests = [
   }
 ];
 
+interface Guest {
+  id: number;
+  name: string;
+  title: string;
+  category: string;
+  location: string;
+  expertise: string[];
+  fee: string;
+  rating: number;
+  collab_count: number;
+  bio: string;
+  portfolio: string[];
+  availability: string;
+  phone: string;
+  email: string;
+  content_ideas: string[];
+  past_works?: string;
+  social_media?: string;
+  website?: string;
+  avg_rating?: number;
+}
+
 export default function GuestDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [showProposalModal, setShowProposalModal] = useState(false);
+  const [guest, setGuest] = useState<Guest | null>(null);
+  const [loading, setLoading] = useState(true);
   const [proposal, setProposal] = useState({
+    creatorName: '',
+    creatorEmail: '',
+    creatorPhone: '',
+    creatorChannel: '',
+    creatorSubscribers: '',
+    creatorAvgViews: '',
+    creatorBio: '',
     contentIdea: '',
     shootingDate: '',
     location: '',
@@ -84,23 +115,108 @@ export default function GuestDetailPage() {
     message: ''
   });
 
-  const guest = mockGuests.find(g => g.id === params.id) || mockGuests[0];
-
-  const handleSubmitProposal = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('협업 제안이 전송되었습니다!\n게스트가 검토 후 연락드릴 예정입니다.');
-    setShowProposalModal(false);
-    setProposal({
-      contentIdea: '',
-      shootingDate: '',
-      location: '',
-      fee: '',
-      message: ''
-    });
+  const categoryEmoji: Record<string, string> = {
+    '운동/건강': '💪',
+    '요리/음식': '🍳',
+    '전문직': '⚖️',
+    '예술/공연': '🎭',
+    '뷰티/패션': '💄',
+    '교육/강연': '📚',
+    '게임/e스포츠': '🎮',
+    '여행/모험': '🌍'
   };
 
+  useEffect(() => {
+    fetchGuestDetail();
+  }, [params.id]);
+
+  const fetchGuestDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/guests/${params.id}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setGuest(result.data);
+      } else {
+        alert('게스트 정보를 불러올 수 없습니다.');
+        router.back();
+      }
+    } catch (error) {
+      console.error('게스트 상세 조회 에러:', error);
+      alert('게스트 정보를 불러오는 중 오류가 발생했습니다.');
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitProposal = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!guest) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/guests/${guest.id}/proposals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(proposal)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('협업 제안이 전송되었습니다!\n게스트가 검토 후 연락드릴 예정입니다.');
+        setShowProposalModal(false);
+        setProposal({
+          creatorName: '',
+          creatorEmail: '',
+          creatorPhone: '',
+          creatorChannel: '',
+          creatorSubscribers: '',
+          creatorAvgViews: '',
+          creatorBio: '',
+          contentIdea: '',
+          shootingDate: '',
+          location: '',
+          fee: '',
+          message: ''
+        });
+      } else {
+        alert('제안 전송 중 오류가 발생했습니다: ' + result.message);
+      }
+    } catch (error) {
+      console.error('협업 제안 전송 에러:', error);
+      alert('제안 전송 중 오류가 발생했습니다.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <p className="text-xl text-gray-500">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!guest) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😢</div>
+          <p className="text-xl text-gray-500">게스트를 찾을 수 없습니다</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Button */}
         <button
@@ -115,8 +231,8 @@ export default function GuestDetailPage() {
         <div className="bg-white rounded-3xl p-8 shadow-xl mb-8">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Profile Image */}
-            <div className="w-32 h-32 bg-gradient-to-br from-orange-100 to-purple-100 rounded-full flex items-center justify-center text-6xl flex-shrink-0">
-              {guest.image}
+            <div className="w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-6xl flex-shrink-0">
+              {categoryEmoji[guest.category] || '👤'}
             </div>
 
             {/* Profile Info */}
@@ -124,7 +240,7 @@ export default function GuestDetailPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{guest.name}</h1>
-                  <p className="text-xl text-orange-600 font-semibold mb-2">{guest.title}</p>
+                  <p className="text-xl text-green-600 font-semibold mb-2">{guest.title}</p>
                   <div className="flex items-center gap-4 text-gray-600">
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
@@ -142,25 +258,25 @@ export default function GuestDetailPage() {
               <div className="flex items-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                  <span className="text-2xl font-bold">{guest.rating}</span>
+                  <span className="text-2xl font-bold">{guest.avg_rating || guest.rating || 0}</span>
                   <span className="text-gray-500">평점</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-purple-600" />
-                  <span className="text-2xl font-bold">{guest.collabCount}회</span>
+                  <Users className="w-5 h-5 text-teal-600" />
+                  <span className="text-2xl font-bold">{guest.collab_count}회</span>
                   <span className="text-gray-500">협업</span>
                 </div>
               </div>
 
               {/* Fee */}
-              <div className="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full font-bold text-lg mb-6">
+              <div className="inline-block px-6 py-3 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-bold text-lg mb-6">
                 출연료: {guest.fee}
               </div>
 
               {/* CTA Button */}
               <button
                 onClick={() => setShowProposalModal(true)}
-                className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold text-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold text-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />
                 협업 제안하기
@@ -182,7 +298,7 @@ export default function GuestDetailPage() {
             {guest.expertise.map((exp, idx) => (
               <span
                 key={idx}
-                className="px-6 py-3 bg-gradient-to-r from-orange-50 to-purple-50 text-orange-600 rounded-full font-semibold border-2 border-orange-200"
+                className="px-6 py-3 bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 rounded-full font-semibold border-2 border-green-200"
               >
                 {exp}
               </span>
@@ -193,13 +309,13 @@ export default function GuestDetailPage() {
         {/* Portfolio */}
         <div className="bg-white rounded-3xl p-8 shadow-lg mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Award className="w-6 h-6 text-orange-600" />
+            <Award className="w-6 h-6 text-green-600" />
             경력 및 자격
           </h2>
           <ul className="space-y-3">
             {guest.portfolio.map((item, idx) => (
               <li key={idx} className="flex items-start gap-3">
-                <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
                 <span className="text-gray-700">{item}</span>
               </li>
             ))}
@@ -210,10 +326,10 @@ export default function GuestDetailPage() {
         <div className="bg-white rounded-3xl p-8 shadow-lg mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">출연 가능 콘텐츠</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {guest.contentIdeas.map((idea, idx) => (
+            {guest.content_ideas.map((idea, idx) => (
               <div
                 key={idx}
-                className="p-4 bg-gradient-to-br from-orange-50 to-purple-50 rounded-xl border-2 border-orange-100"
+                className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-100"
               >
                 <p className="font-semibold text-gray-900">💡 {idea}</p>
               </div>
@@ -222,21 +338,67 @@ export default function GuestDetailPage() {
         </div>
 
         {/* Past Works */}
-        <div className="bg-white rounded-3xl p-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">과거 출연 이력</h2>
-          <div className="space-y-4">
-            {guest.pastWorks.map((work, idx) => (
-              <div
-                key={idx}
-                className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition"
-              >
-                <h3 className="font-bold text-lg text-gray-900 mb-2">{work.title}</h3>
-                <div className="flex items-center gap-4 text-gray-600">
-                  <span>📺 {work.channel}</span>
-                  <span>👁️ {work.views} 조회</span>
+        {guest.past_works && (
+          <div className="bg-white rounded-3xl p-8 shadow-lg mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">과거 출연 이력</h2>
+            <div className="p-6 bg-gray-50 rounded-xl">
+              <p className="text-gray-700 whitespace-pre-line">{guest.past_works}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Social Media & Website */}
+        {(guest.social_media || guest.website) && (
+          <div className="bg-white rounded-3xl p-8 shadow-lg mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">소셜 미디어</h2>
+            <div className="space-y-4">
+              {guest.social_media && (
+                <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
+                  <span className="text-2xl">📱</span>
+                  <div>
+                    <p className="text-sm text-gray-600">SNS</p>
+                    <p className="font-semibold text-gray-900">{guest.social_media}</p>
+                  </div>
                 </div>
+              )}
+              {guest.website && (
+                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
+                  <span className="text-2xl">🌐</span>
+                  <div>
+                    <p className="text-sm text-gray-600">웹사이트</p>
+                    <a
+                      href={guest.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-green-600 hover:underline"
+                    >
+                      {guest.website}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Contact Info */}
+        <div className="bg-white rounded-3xl p-8 shadow-lg">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">연락처</h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+              <Phone className="w-6 h-6 text-green-600" />
+              <div>
+                <p className="text-sm text-gray-600">전화번호</p>
+                <p className="font-semibold text-gray-900">{guest.phone}</p>
               </div>
-            ))}
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+              <Mail className="w-6 h-6 text-green-600" />
+              <div>
+                <p className="text-sm text-gray-600">이메일</p>
+                <p className="font-semibold text-gray-900">{guest.email}</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -256,6 +418,107 @@ export default function GuestDetailPage() {
             </div>
 
             <form onSubmit={handleSubmitProposal} className="space-y-6">
+              {/* Creator Name */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  크리에이터 이름 *
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
+                  placeholder="홍길동"
+                  value={proposal.creatorName}
+                  onChange={(e) => setProposal({ ...proposal, creatorName: e.target.value })}
+                />
+              </div>
+
+              {/* Creator Email */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  이메일 *
+                </label>
+                <input
+                  type="email"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
+                  placeholder="creator@example.com"
+                  value={proposal.creatorEmail}
+                  onChange={(e) => setProposal({ ...proposal, creatorEmail: e.target.value })}
+                />
+              </div>
+
+              {/* Creator Phone */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  연락처 *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
+                  placeholder="010-1234-5678"
+                  value={proposal.creatorPhone}
+                  onChange={(e) => setProposal({ ...proposal, creatorPhone: e.target.value })}
+                />
+              </div>
+
+              {/* Creator Channel */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  채널 URL
+                </label>
+                <input
+                  type="url"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
+                  placeholder="https://youtube.com/@yourch annel"
+                  value={proposal.creatorChannel}
+                  onChange={(e) => setProposal({ ...proposal, creatorChannel: e.target.value })}
+                />
+              </div>
+
+              {/* Creator Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    구독자 수
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
+                    placeholder="예: 10만명"
+                    value={proposal.creatorSubscribers}
+                    onChange={(e) => setProposal({ ...proposal, creatorSubscribers: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    평균 조회수
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
+                    placeholder="예: 5만회"
+                    value={proposal.creatorAvgViews}
+                    onChange={(e) => setProposal({ ...proposal, creatorAvgViews: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Creator Bio */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  채널 소개
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 resize-none"
+                  placeholder="채널 콘텐츠와 타겟 시청자에 대해 간략히 설명해주세요"
+                  value={proposal.creatorBio}
+                  onChange={(e) => setProposal({ ...proposal, creatorBio: e.target.value })}
+                />
+              </div>
+
               {/* Content Idea */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -264,7 +527,7 @@ export default function GuestDetailPage() {
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                   placeholder="예: 홈트레이닝 30일 챌린지"
                   value={proposal.contentIdea}
                   onChange={(e) => setProposal({ ...proposal, contentIdea: e.target.value })}
@@ -279,7 +542,7 @@ export default function GuestDetailPage() {
                 <input
                   type="date"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                   value={proposal.shootingDate}
                   onChange={(e) => setProposal({ ...proposal, shootingDate: e.target.value })}
                 />
@@ -293,7 +556,7 @@ export default function GuestDetailPage() {
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                   placeholder="예: 서울 강남구 헬스장"
                   value={proposal.location}
                   onChange={(e) => setProposal({ ...proposal, location: e.target.value })}
@@ -307,7 +570,7 @@ export default function GuestDetailPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500"
                   placeholder="예: 무료 (채널 홍보 제공) 또는 50만원"
                   value={proposal.fee}
                   onChange={(e) => setProposal({ ...proposal, fee: e.target.value })}
@@ -325,7 +588,7 @@ export default function GuestDetailPage() {
                 <textarea
                   required
                   rows={6}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 resize-none"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 resize-none"
                   placeholder="게스트에게 전할 메시지를 작성해주세요.&#10;- 채널 소개&#10;- 콘텐츠 기획 의도&#10;- 촬영 진행 방식&#10;- 기타 문의사항"
                   value={proposal.message}
                   onChange={(e) => setProposal({ ...proposal, message: e.target.value })}
@@ -333,8 +596,8 @@ export default function GuestDetailPage() {
               </div>
 
               {/* Your Channel Info */}
-              <div className="bg-orange-50 p-4 rounded-xl">
-                <p className="text-sm text-orange-800">
+              <div className="bg-green-50 p-4 rounded-xl">
+                <p className="text-sm text-green-800">
                   💡 <strong>Tip:</strong> 채널 정보(구독자 수, 평균 조회수 등)를 함께 알려주면 게스트의 응답률이 높아집니다!
                 </p>
               </div>
@@ -350,7 +613,7 @@ export default function GuestDetailPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full font-bold hover:shadow-xl transition"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold hover:shadow-xl transition"
                 >
                   제안서 전송
                 </button>
