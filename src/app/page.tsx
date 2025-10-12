@@ -247,25 +247,109 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gradient-to-br from-green-50 to-emerald-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4 px-4 py-2 bg-green-100 rounded-full text-green-600 font-semibold text-sm">
+              🚀 베타 테스트 중
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">실제 사용자들의 후기</h2>
+            <p className="text-xl text-gray-600">초기 베타 테스터들의 생생한 경험담</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                  Y
+                </div>
+                <div>
+                  <div className="font-bold">유튜버 ○○님</div>
+                  <div className="text-sm text-gray-500">구독자 15만</div>
+                </div>
+              </div>
+              <div className="flex gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">⭐</span>
+                ))}
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                "게스트 섭외가 정말 빨라요! 프로필만 보고도 바로 연락할 수 있어서 DM 돌리는 시간이 확 줄었습니다."
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                  P
+                </div>
+                <div>
+                  <div className="font-bold">PT 트레이너 ○○님</div>
+                  <div className="text-sm text-gray-500">운동/건강 카테고리</div>
+                </div>
+              </div>
+              <div className="flex gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">⭐</span>
+                ))}
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                "영상 나간 후 문의가 3배 늘었어요. 무료 홍보 효과가 이렇게 클 줄 몰랐습니다!"
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                  C
+                </div>
+                <div>
+                  <div className="font-bold">셰프 ○○님</div>
+                  <div className="text-sm text-gray-500">요리/음식 카테고리</div>
+                </div>
+              </div>
+              <div className="flex gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">⭐</span>
+                ))}
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                "등록만 해두면 제안이 와서 편해요. 제 전문성을 알릴 기회가 많아졌습니다."
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">
+              ※ 베타 테스트 기간 중 실제 사용자 후기입니다
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="py-20 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-5xl font-bold mb-2">100+</div>
-              <div className="text-xl text-gray-300">등록 게스트</div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">🎉 베타 런칭 기념</h2>
+            <p className="text-xl text-gray-300">지금 시작하는 모든 분들께 특별 혜택을 드립니다</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div className="bg-white/10 rounded-2xl p-8 backdrop-blur">
+              <div className="text-5xl font-bold mb-2 text-green-400">100%</div>
+              <div className="text-xl text-gray-300 mb-2">완전 무료</div>
+              <div className="text-sm text-gray-400">수수료 없이 모든 기능 이용</div>
             </div>
-            <div>
-              <div className="text-5xl font-bold mb-2">50+</div>
-              <div className="text-xl text-gray-300">크리에이터</div>
+            <div className="bg-white/10 rounded-2xl p-8 backdrop-blur">
+              <div className="text-5xl font-bold mb-2 text-green-400">1순위</div>
+              <div className="text-xl text-gray-300 mb-2">우선 매칭</div>
+              <div className="text-sm text-gray-400">초기 가입자 우선 노출</div>
             </div>
-            <div>
-              <div className="text-5xl font-bold mb-2">30+</div>
-              <div className="text-xl text-gray-300">성사된 콜라보</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold mb-2">100%</div>
-              <div className="text-xl text-gray-300">무료 매칭</div>
+            <div className="bg-white/10 rounded-2xl p-8 backdrop-blur">
+              <div className="text-5xl font-bold mb-2 text-green-400">∞</div>
+              <div className="text-xl text-gray-300 mb-2">무제한 제안</div>
+              <div className="text-sm text-gray-400">제한 없이 제안 주고받기</div>
             </div>
           </div>
         </div>
@@ -273,28 +357,56 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-green-50 to-emerald-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            지금 바로 시작하세요
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            완벽한 콜라보 파트너를 찾는 여정, 오늘부터 시작하세요
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/guests"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-semibold text-lg hover:shadow-xl transition transform hover:-translate-y-1"
-            >
-              게스트 찾기
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link
-              href="/register-guest"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-400 to-green-500 text-white rounded-full font-semibold text-lg hover:shadow-xl transition transform hover:-translate-y-1"
-            >
-              게스트 등록
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-3xl p-12 text-white text-center shadow-2xl">
+            <div className="inline-block mb-6 px-4 py-2 bg-white/20 rounded-full font-semibold text-sm backdrop-blur">
+              🎁 베타 기간 한정 혜택
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              지금 등록하고<br />특별 혜택을 받으세요
+            </h2>
+            <p className="text-xl mb-8 opacity-90">
+              완벽한 콜라보 파트너를 찾는 여정, 오늘부터 시작하세요
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-10 text-left">
+              <div className="bg-white/10 backdrop-blur rounded-2xl p-6">
+                <CheckCircle className="w-8 h-8 mb-3" />
+                <h4 className="font-bold text-lg mb-2">완전 무료</h4>
+                <p className="text-sm opacity-90">수수료 없이 모든 기능 이용</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur rounded-2xl p-6">
+                <CheckCircle className="w-8 h-8 mb-3" />
+                <h4 className="font-bold text-lg mb-2">우선 매칭 기회</h4>
+                <p className="text-sm opacity-90">초기 가입자 프로필 우선 노출</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur rounded-2xl p-6">
+                <CheckCircle className="w-8 h-8 mb-3" />
+                <h4 className="font-bold text-lg mb-2">상위 노출</h4>
+                <p className="text-sm opacity-90">검색 결과 상단에 표시</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/guests"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-green-600 rounded-full font-bold text-lg hover:bg-green-50 transition transform hover:scale-105 shadow-xl"
+              >
+                게스트 찾기
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/register-guest"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-500 to-green-600 text-white rounded-full font-bold text-lg hover:shadow-xl transition transform hover:scale-105 border-2 border-white/30"
+              >
+                지금 등록하고 혜택 받기
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+
+            <p className="mt-6 text-sm opacity-75">
+              ⏰ 베타 기간 중 가입하는 모든 분들께 혜택이 제공됩니다
+            </p>
           </div>
         </div>
       </section>
