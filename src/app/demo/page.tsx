@@ -20,7 +20,7 @@ export default function Demo() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">판매 중인 상품</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">판매 중인 상품1</h2>
 
         {/* Items Grid */}
         <div className="space-y-4">
