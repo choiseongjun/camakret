@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, MapPin, Star, Users, Award, Calendar, Phone, Mail, Send, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, Users, Award, Calendar, Phone, Mail, Send, X, Lock } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 // 임시 데이터 (guests/page.tsx와 동일)
 const mockGuests = [
@@ -99,6 +100,7 @@ interface Guest {
 export default function GuestDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, login } = useAuth();
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [guest, setGuest] = useState<Guest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -363,55 +365,96 @@ export default function GuestDetailPage() {
         {(guest.social_media || guest.website) && (
           <div className="bg-white rounded-3xl p-8 shadow-lg mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">소셜 미디어</h2>
-            <div className="space-y-4">
-              {guest.social_media && (
-                <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
-                  <span className="text-2xl">📱</span>
-                  <div>
-                    <p className="text-sm text-gray-600">SNS</p>
-                    <p className="font-semibold text-gray-900">{guest.social_media}</p>
+            {user ? (
+              <div className="space-y-4">
+                {guest.social_media && (
+                  <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
+                    <span className="text-2xl">📱</span>
+                    <div>
+                      <p className="text-sm text-gray-600">SNS</p>
+                      <p className="font-semibold text-gray-900">{guest.social_media}</p>
+                    </div>
                   </div>
-                </div>
-              )}
-              {guest.website && (
-                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
-                  <span className="text-2xl">🌐</span>
-                  <div>
-                    <p className="text-sm text-gray-600">웹사이트</p>
-                    <a
-                      href={guest.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-green-600 hover:underline"
-                    >
-                      {guest.website}
-                    </a>
+                )}
+                {guest.website && (
+                  <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
+                    <span className="text-2xl">🌐</span>
+                    <div>
+                      <p className="text-sm text-gray-600">웹사이트</p>
+                      <a
+                        href={guest.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-green-600 hover:underline"
+                      >
+                        {guest.website}
+                      </a>
+                    </div>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="mb-6">
+                  <Lock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">소셜 미디어 정보는 로그인 후 확인 가능합니다</h3>
+                  <p className="text-gray-600 mb-6">
+                    게스트의 SNS 계정과 웹사이트를 확인하려면 로그인이 필요합니다.
+                  </p>
                 </div>
-              )}
-            </div>
+                <button
+                  onClick={login}
+                  className="px-8 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold hover:shadow-xl transition transform hover:-translate-y-1"
+                >
+                  로그인하고 소셜 미디어 보기
+                </button>
+              </div>
+            )}
           </div>
         )}
 
         {/* Contact Info */}
         <div className="bg-white rounded-3xl p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">연락처</h2>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-              <Phone className="w-6 h-6 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">전화번호</p>
-                <p className="font-semibold text-gray-900">{guest.phone}</p>
+          {user ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <Phone className="w-6 h-6 text-green-600" />
+                <div>
+                  <p className="text-sm text-gray-600">전화번호</p>
+                  <p className="font-semibold text-gray-900">{guest.phone}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <Mail className="w-6 h-6 text-green-600" />
+                <div>
+                  <p className="text-sm text-gray-600">이메일</p>
+                  <p className="font-semibold text-gray-900">{guest.email}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-              <Mail className="w-6 h-6 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">이메일</p>
-                <p className="font-semibold text-gray-900">{guest.email}</p>
+          ) : (
+            <div className="text-center py-12">
+              <div className="mb-6">
+                <Lock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">연락처 정보는 로그인 후 확인 가능합니다</h3>
+                <p className="text-gray-600 mb-6">
+                  게스트의 전화번호와 이메일을 확인하려면 로그인이 필요합니다.
+                </p>
+              </div>
+              <button
+                onClick={login}
+                className="px-8 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-bold hover:shadow-xl transition transform hover:-translate-y-1"
+              >
+                로그인하고 연락처 보기
+              </button>
+              <div className="mt-8 p-4 bg-green-50 rounded-xl">
+                <p className="text-sm text-green-800">
+                  💡 <strong>로그인 혜택:</strong> 연락처 확인, 협업 제안, 게스트 북마크 등 다양한 기능을 이용할 수 있습니다!
+                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 
