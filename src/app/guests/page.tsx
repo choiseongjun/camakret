@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, MapPin, Star, Award, Users } from 'lucide-react';
@@ -159,7 +159,7 @@ interface Guest {
   avg_rating?: number;
 }
 
-export default function GuestsPage() {
+function GuestsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -486,5 +486,20 @@ export default function GuestsPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function GuestsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <p className="text-xl text-gray-500">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <GuestsPageContent />
+    </Suspense>
   );
 }
