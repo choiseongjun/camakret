@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,9 +17,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">🎬</span>
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="CreatorHub Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
             <span className="text-xl font-bold text-gray-900">CreatorHub</span>
           </Link>
 
