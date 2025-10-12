@@ -17,14 +17,36 @@ export function getApiUrl(endpoint: string): string {
 }
 
 /**
- * Fetch wrapper that automatically uses the correct API URL
+ * Get access token from localStorage
+ */
+function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('access_token');
+}
+
+/**
+ * Fetch wrapper that automatically uses the correct API URL and includes auth token
  * @param endpoint - API endpoint
  * @param options - Fetch options
  * @returns Fetch response
  */
 export async function apiFetch(endpoint: string, options?: RequestInit): Promise<Response> {
   const url = getApiUrl(endpoint);
-  return fetch(url, options);
+  const token = getAccessToken();
+
+  // Merge headers with authorization token
+  const headers: HeadersInit = {
+    ...options?.headers,
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
 }
 
 export { API_BASE_URL };

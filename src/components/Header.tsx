@@ -31,6 +31,7 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/about" className="text-gray-600 hover:text-gray-900 transition">서비스 소개</Link>
             <Link href="/guests" className="text-gray-600 hover:text-gray-900 transition">게스트 찾기</Link>
+            <Link href="/requests" className="text-gray-600 hover:text-gray-900 transition">협업 요청</Link>
             <Link href="/register-guest" className="text-gray-600 hover:text-gray-900 transition">게스트 등록</Link>
             <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition">이용 방법</Link>
             {!authLoading && (
@@ -79,6 +80,13 @@ export default function Header() {
                 onClick={closeMobileMenu}
               >
                 게스트 찾기
+              </Link>
+              <Link
+                href="/requests"
+                className="text-gray-600 hover:text-gray-900 transition py-2"
+                onClick={closeMobileMenu}
+              >
+                협업 요청
               </Link>
               <Link
                 href="/register-guest"
