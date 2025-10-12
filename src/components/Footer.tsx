@@ -40,21 +40,21 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4">고객 지원</h3>
             <ul className="space-y-2 text-sm">
-              <li>
-                <a
-                  href="mailto:creatorhub987@gmail.com"
-                  className="hover:text-white transition flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                  문의하기
-                </a>
-              </li>
               <li><Link href="/privacy" className="hover:text-white transition">개인정보처리방침</Link></li>
               <li><Link href="/terms" className="hover:text-white transition">이용약관</Link></li>
             </ul>
+            <div className="mt-4 text-sm">
+              <p className="text-gray-400 mb-1">문의하기</p>
+              <p className="text-green-400">creatorhub987@gmail.com</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-white font-semibold mb-4">협업 문의</h3>
+            <div className="text-sm">
+              <p className="mb-2">크리에이터&게스트 협업 및 제휴 문의</p>
+              <p className="text-green-400">creatorhub987@gmail.com</p>
+            </div>
           </div>
         </div>
 
