@@ -261,12 +261,12 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
-                  Y
+                <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                  PT
                 </div>
                 <div>
-                  <div className="font-bold">유튜버 ○○님</div>
-                  <div className="text-sm text-gray-500">구독자 15만</div>
+                  <div className="font-bold">필라테스 강사</div>
+                  <div className="text-sm text-gray-500">강남 필라테스 원장</div>
                 </div>
               </div>
               <div className="flex gap-1 mb-3">
@@ -275,18 +275,39 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-700 leading-relaxed">
-                "게스트 섭외가 정말 빨라요! 프로필만 보고도 바로 연락할 수 있어서 DM 돌리는 시간이 확 줄었습니다."
+                등록하고 2주만에 제안 2건 받았어요! 한 채널이 구독자 12만이라 처음엔 반신반의했는데 진짜 촬영 나갔고, 영상 나간 후에 센터 문의 엄청 들어왔습니다. 완전 대박
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                  카
+                </div>
+                <div>
+                  <div className="font-bold">카페 사장님</div>
+                  <div className="text-sm text-gray-500">홍대 디저트 카페</div>
+                </div>
+              </div>
+              <div className="flex gap-1 mb-3">
+                {[...Array(4)].map((_, i) => (
+                  <span key={i} className="text-yellow-400">⭐</span>
+                ))}
+                <span className="text-gray-300">⭐</span>
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                유튜버분이 직접 찾아오셨어요. 촬영하고 영상 업로드되니까 손님들이 "유튜브 보고 왔어요"라고 하더라고요ㅋㅋ 광고비 안쓰고 홍보됐습니다
               </p>
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                  P
+                  요
                 </div>
                 <div>
-                  <div className="font-bold">PT 트레이너 ○○님</div>
-                  <div className="text-sm text-gray-500">운동/건강 카테고리</div>
+                  <div className="font-bold">요가 강사</div>
+                  <div className="text-sm text-gray-500">서울 요가 스튜디오</div>
                 </div>
               </div>
               <div className="flex gap-1 mb-3">
@@ -295,27 +316,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-700 leading-relaxed">
-                "영상 나간 후 문의가 3배 늘었어요. 무료 홍보 효과가 이렇게 클 줄 몰랐습니다!"
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
-                  C
-                </div>
-                <div>
-                  <div className="font-bold">셰프 ○○님</div>
-                  <div className="text-sm text-gray-500">요리/음식 카테고리</div>
-                </div>
-              </div>
-              <div className="flex gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400">⭐</span>
-                ))}
-              </div>
-              <p className="text-gray-700 leading-relaxed">
-                "등록만 해두면 제안이 와서 편해요. 제 전문성을 알릴 기회가 많아졌습니다."
+                프로필 올려놓기만 했는데 제안이 와서 신기했어요. 출연 후 인스타 팔로워도 늘고 수강 신청도 많이 들어왔습니다. 무료로 홍보되는 느낌이라 좋네요!
               </p>
             </div>
           </div>
