@@ -39,10 +39,19 @@ export default function RequestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [hasGuestProfile, setHasGuestProfile] = useState(false);
+  const [guestProfileChecked, setGuestProfileChecked] = useState(false);
+  const [applicationMessage, setApplicationMessage] = useState('');
 
   useEffect(() => {
     fetchRequestDetail();
   }, [params.id]);
+
+  useEffect(() => {
+    if (user) {
+      checkGuestProfile();
+    }
+  }, [user]);
 
   const fetchRequestDetail = async () => {
     try {
@@ -60,6 +69,24 @@ export default function RequestDetailPage() {
     }
   };
 
+  const checkGuestProfile = async () => {
+    try {
+      const response = await apiFetch('/api/guests/my-profile');
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setHasGuestProfile(true);
+      } else {
+        setHasGuestProfile(false);
+      }
+    } catch (error) {
+      console.error('게스트 프로필 확인 에러:', error);
+      setHasGuestProfile(false);
+    } finally {
+      setGuestProfileChecked(true);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
@@ -74,7 +101,39 @@ export default function RequestDetailPage() {
       login();
       return;
     }
-    setShowApplyModal(true);
+
+    // 게스트 프로필이 있으면 지원 모달 표시, 없으면 등록 안내
+    if (hasGuestProfile) {
+      setShowApplyModal(true);
+    } else {
+      alert('게스트 프로필이 필요합니다. 게스트 프로필을 먼저 등록해주세요.');
+      router.push('/register-guest');
+    }
+  };
+
+  const handleSubmitApplication = async (message: string) => {
+    try {
+      const response = await apiFetch(`/api/requests/${params.id}/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('지원이 완료되었습니다!');
+        setShowApplyModal(false);
+        fetchRequestDetail(); // 지원자 수 업데이트
+      } else {
+        alert(result.message || '지원 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('지원 에러:', error);
+      alert('지원 중 오류가 발생했습니다.');
+    }
   };
 
   const handleDelete = async () => {
@@ -306,28 +365,36 @@ export default function RequestDetailPage() {
         </div>
       </main>
 
-      {/* Apply Modal - 추후 구현 */}
+      {/* Apply Modal */}
       {showApplyModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">지원하기</h3>
-            <p className="text-gray-600 mb-6">
-              지원 기능은 게스트 프로필이 등록되어 있어야 합니다.
-              게스트 프로필을 먼저 등록해주세요.
+            <p className="text-gray-600 mb-4">
+              크리에이터에게 전달할 메시지를 작성해주세요.
             </p>
+            <textarea
+              value={applicationMessage}
+              onChange={(e) => setApplicationMessage(e.target.value)}
+              placeholder="자기소개, 협업 경험, 콘텐츠 아이디어 등을 자유롭게 작성해주세요."
+              className="w-full h-40 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none mb-4 resize-none"
+            />
             <div className="flex gap-4">
               <button
-                onClick={() => setShowApplyModal(false)}
+                onClick={() => {
+                  setShowApplyModal(false);
+                  setApplicationMessage('');
+                }}
                 className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-full font-bold hover:bg-gray-50 transition"
               >
                 취소
               </button>
-              <Link
-                href="/register-guest"
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full font-bold hover:shadow-xl transition text-center"
+              <button
+                onClick={() => handleSubmitApplication(applicationMessage)}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full font-bold hover:shadow-xl transition"
               >
-                게스트 등록
-              </Link>
+                지원하기
+              </button>
             </div>
           </div>
         </div>
