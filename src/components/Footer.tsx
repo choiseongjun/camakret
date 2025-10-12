@@ -59,15 +59,19 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 pt-8">
-          <div className="text-center text-sm mb-4">
-            <p className="text-gray-400 mb-2">크리에이티브허브 | 대표: 크리에이티브허브 담당자</p>
-            <p className="text-gray-400 mb-2">이메일: creatorhub987@gmail.com | 개인정보보호책임자: creatorhub987@gmail.com</p>
-            <p className="text-gray-500 text-xs">
-              본 사이트는 정보통신망 이용촉진 및 정보보호 등에 관한 법률과 개인정보보호법을 준수합니다.
-            </p>
-          </div>
-          <div className="text-center text-sm">
-            <p className="text-gray-400">&copy; 2025 CreatorHub. All rights reserved.</p>
+          <div className="text-center text-sm space-y-2">
+            <div className="text-gray-400">
+              <p className="mb-1">상호: 크리에이티브허브 | 대표: 최성준</p>
+              <p className="mb-1">주소: 서울특별시 동작구 상도동 211-114</p>
+              <p className="mb-1">이메일: creatorhub987@gmail.com | 개인정보보호책임자: creatorhub987@gmail.com</p>
+              {/* <p className="mb-1">사업자등록번호: 사업자등록 준비중 | 통신판매업 신고: 신고 예정</p> */}
+            </div>
+            <div className="text-gray-500 text-xs pt-3">
+              <p className="mb-2"> 
+                본 사이트는 정보통신망 이용촉진 및 정보보호 등에 관한 법률과 개인정보보호법을 준수합니다.
+              </p>
+              <p className="text-gray-400">&copy; 2025 CreatorHub. All rights reserved.</p>
+            </div>
           </div>
         </div>
       </div>
