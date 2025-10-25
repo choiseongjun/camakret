@@ -259,9 +259,16 @@ export default function GuestDashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">내 협업 지원 리스트</h1>
+          <Link href="/guest/dashboard/applications"><p className="text-lg text-gray-600">받은 협업 지원을 확인하세요 이동</p></Link>
+        </div>
+        
+        <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">게스트 대시보드</h1>
           <p className="text-lg text-gray-600">받은 협업 제안을 확인하세요</p>
         </div>
+
+        
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">

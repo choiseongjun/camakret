@@ -37,6 +37,9 @@ export default function Header() {
             {!authLoading && (
               user ? (
                 <>
+                  <Link href="/my-applications" className="text-gray-600 hover:text-gray-900 transition font-medium">
+                    내 지원 목록
+                  </Link>
                   <Link href="/guest/dashboard" className="text-gray-600 hover:text-gray-900 transition font-medium">
                     내 대시보드
                   </Link>
@@ -105,6 +108,13 @@ export default function Header() {
               {!authLoading && (
                 user ? (
                   <>
+                    <Link
+                      href="/my-applications"
+                      className="text-gray-600 hover:text-gray-900 transition font-medium py-2"
+                      onClick={closeMobileMenu}
+                    >
+                      내 지원 목록
+                    </Link>
                     <Link
                       href="/guest/dashboard"
                       className="text-gray-600 hover:text-gray-900 transition font-medium py-2"

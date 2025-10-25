@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import ReceivedApplicationsSummary from './ReceivedApplicationsSummary';
+
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -18,6 +20,7 @@ export default function Dashboard() {
                 <Link href="/community" className="text-gray-600 hover:text-gray-900">커뮤니티</Link>
                 <Link href="/coupons" className="text-gray-600 hover:text-gray-900">쿠폰</Link>
                 <Link href="/email" className="text-gray-600 hover:text-gray-900">이메일</Link>
+                <Link href="/dashboard/applications" className="text-gray-600 hover:text-gray-900">받은 지원</Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">
@@ -139,48 +142,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 예약 일정 */}
         <div className="grid md:grid-cols-2 gap-6">
-          {/* 예약 일정 */}
-          <div className="bg-white rounded-2xl border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="font-bold text-gray-900">예약 일정</h3>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="text-2xl">📅</div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900">10/6 (월) 14:00</div>
-                  <div className="text-sm text-gray-600">1:1 뷰티 컨설팅 • 김XX님</div>
-                </div>
-                <div className="text-emerald-600 font-semibold">₩50,000</div>
-              </div>
-
-              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="text-2xl">📅</div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900">10/7 (화) 16:00</div>
-                  <div className="text-sm text-gray-600">1:1 뷰티 컨설팅 • 이XX님</div>
-                </div>
-                <div className="text-emerald-600 font-semibold">₩50,000</div>
-              </div>
-
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="text-2xl">📅</div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900">10/9 (목) 10:00</div>
-                  <div className="text-sm text-gray-600">1:1 뷰티 컨설팅 • 박XX님</div>
-                </div>
-                <div className="text-gray-600 font-semibold">₩50,000</div>
-              </div>
-
-              <div className="text-center pt-4">
-                <Link href="/booking" className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold">
-                  전체 일정 보기 →
-                </Link>
-              </div>
-            </div>
-          </div>
+          {/* 받은 지원 요약 */}
+          <ReceivedApplicationsSummary />
 
           {/* Recent Sales */}
           <div className="bg-white rounded-2xl border border-gray-200">
