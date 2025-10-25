@@ -14,7 +14,7 @@ const CreatorApplicationsPage = () => {
       const token = getAccessToken();
       if (!token) {
         setLoading(false);
-        setError('Authentication token not found.');
+        // setError('Authentication token not found.');
         return;
       }
 
@@ -30,7 +30,7 @@ const CreatorApplicationsPage = () => {
         const data = await response.json();
         setApplications(data.data);
       } catch (err) {
-        setError(err.message);
+        // setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -62,7 +62,7 @@ const CreatorApplicationsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {applications.map((app) => (
+            {/* {applications.map((app) => (
               <tr key={app.application_id}>
                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                   <div className="flex items-center">
@@ -86,7 +86,7 @@ const CreatorApplicationsPage = () => {
                   </button>
                 </td>
               </tr>
-            ))}
+            ))} */}
           </tbody>
         </table>
       </div>

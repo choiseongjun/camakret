@@ -32,7 +32,7 @@ const ReceivedApplicationsSummary = () => {
         // Take only the first 5
         setApplications(data.data.slice(0, 5));
       } catch (err) {
-        setError(err.message);
+        // setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -56,7 +56,7 @@ const ReceivedApplicationsSummary = () => {
         </div>
       </div>
       <div className="p-6 space-y-4">
-        {applications.map((app) => (
+        {/* {applications.map((app) => (
           <div key={app.application_id} className="flex items-start justify-between pb-4 border-b border-gray-100">
             <div className="flex items-center">
               <div className="flex-shrink-0 w-10 h-10">
@@ -71,7 +71,7 @@ const ReceivedApplicationsSummary = () => {
               <div className="text-sm text-gray-600">{new Date(app.applied_at).toLocaleDateString()}</div>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );
