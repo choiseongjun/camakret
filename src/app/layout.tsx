@@ -54,13 +54,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <AuthProvider> */}
+        <AuthProvider>
           {/* <Header /> */}
           <main className="min-h-screen">
             {children}
           </main>
           <Footer />
-        {/* </AuthProvider> */}
+        </AuthProvider>
       </body>
     </html>
   );
