@@ -17,10 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CreatorHub - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
+  title: "CreatorHub(크리에이터허브) - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
   description: "크리에이터를 위한 올인원 플랫폼. 게스트 섭외, 촬영 장소 추천, 리뷰 및 커뮤니티. 유튜버, 스트리머, 인플루언서를 위한 최고의 협업 파트너를 찾아보세요.",
   keywords: ["크리에이터", "유튜버", "먹방", "스트리머", "게스트 섭외", "촬영 장소", "협업", "출연자", "콜라보", "리뷰", "커뮤니티", "인플루언서", "콘텐츠 제작"],
-  authors: [{ name: "CreatorHub" }],
+  authors: [{ name: "CreatorHub(크리에이터허브)" }],
   icons: {
     icon: [
       { url: '/favicon/favicon.svg', type: 'image/svg+xml' },
@@ -30,16 +30,16 @@ export const metadata: Metadata = {
     apple: '/favicon/favicon-96x96.png',
   },
   openGraph: {
-    title: "CreatorHub - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
+    title: "CreatorHub(크리에이터허브) - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
     description: "게스트 섭외부터 촬영 장소까지, 크리에이터를 위한 모든 것",
     url: "https://creatorhub.kr",
-    siteName: "CreatorHub",
+    siteName: "CreatorHub(크리에이터허브)",
     locale: "ko_KR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CreatorHub - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
+    title: "CreatorHub(크리에이터허브) - 크리에이터와 게스트, 장소를 연결하는 플랫폼",
     description: "게스트 섭외부터 촬영 장소까지, 크리에이터를 위한 모든 것",
   },
 };
@@ -54,13 +54,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Header />
+        {/* <AuthProvider> */}
+          {/* <Header /> */}
           <main className="min-h-screen">
             {children}
           </main>
           <Footer />
-        </AuthProvider>
+        {/* </AuthProvider> */}
       </body>
     </html>
   );
